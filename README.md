@@ -32,7 +32,7 @@ The following shows a demo of this concept, integrated with claude code.
 
 ```
 
-oc-dynamic-agent-patterns on  main is 📦 v0.1.0 via 🐍 v3.13.7 on ☁️  mofoster@redhat.com
+oc-dynamic-agent-patterns on  main is 📦 v0.1.0 via 🐍 v3.13.7 on ☁️  usize
 ❯ claude
 ╭─────────────────────────────────────────────────────────────╮
 │ ✻ Welcome to Claude Code!                                   │
@@ -61,13 +61,13 @@ oc-dynamic-agent-patterns on  main is 📦 v0.1.0 via 🐍 v3.13.7 on ☁️ 
 ⏺ Found 3 A2A agents running in your OpenShift cluster:
 
   1. cdn-xy-zz-0009-debug-agent (namespace: mofoster-dynamic-a2a-card)
-    - URL: https://cdn-xy-zz-0009-debug-agent-mofoster-dynamic-a2a-card.apps.maas2.octo-emerging.redhataicoe.com
+    - URL: https://cdn-xy-zz-0009-debug-agent-mofoster-dynamic-a2a-card.apps.com
     - Status: Endpoint accessible ✓
   2. cdn-xy-zz-0012-debug-agent (namespace: mofoster-dynamic-a2a-card)
-    - URL: https://cdn-xy-zz-0012-debug-agent-mofoster-dynamic-a2a-card.apps.maas2.octo-emerging.redhataicoe.com
+    - URL: https://cdn-xy-zz-0012-debug-agent-mofoster-dynamic-a2a-card.apps.com
     - Status: Endpoint accessible ✓
   3. lb-xy-zz-0003-debug-agent (namespace: mofoster-dynamic-a2a-card)
-    - URL: https://lb-xy-zz-0003-debug-agent-mofoster-dynamic-a2a-card.apps.maas2.octo-emerging.redhataicoe.com
+    - URL: https://lb-xy-zz-0003-debug-agent-mofoster-dynamic-a2a-card.apps.com
     - Status: Endpoint accessible ✓
 
   All agents are running in the mofoster-dynamic-a2a-card namespace and their endpoints are accessible.
@@ -76,8 +76,8 @@ oc-dynamic-agent-patterns on  main is 📦 v0.1.0 via 🐍 v3.13.7 on ☁️ 
 
 ⏺ I'll contact one of the debug agents and run its debug service. Let me start with the first one (cdn-xy-zz-0009-debug-agent).
 
-⏺ oc-agent-discovery - send_message_to_agent (MCP)(agent_url: "https://cdn-xy-zz-0009-debug-agent-mofoster-dynamic-a2a-card.apps.maas2.octo-emerging.redhataicoe.com", message: "Please run your debug service")
-  ⎿  Response from https://cdn-xy-zz-0009-debug-agent-mofoster-dynamic-a2a-card.apps.maas2.octo-emerging.redhataicoe.com:
+⏺ oc-agent-discovery - send_message_to_agent (MCP)(agent_url: "https://cdn-xy-zz-0009-debug-agent-mofoster-dynamic-a2a-card.apps.com", message: "Please run your debug service")
+  ⎿  Response from https://cdn-xy-zz-0009-debug-agent-mofoster-dynamic-a2a-card.apps.com:
 
      {
      … +20 lines (ctrl+o to expand)
