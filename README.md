@@ -8,7 +8,7 @@ A production agent discovery pattern needs at least basic security. we also have
 
 Dynamic agent discovery creates interesting new possibilities for cluster management.
 
-For example, deployments can include agentic utilities like debuggers that synthesize
+For example, deployments can include teams of agents that operate as utilities like e.g. a degtugging agent that synthesizes
 data from metrics and logs in order to surface problems with devices or deployments
 and offer succinct summaries and suggested next steps.
 
@@ -16,10 +16,10 @@ Making such agents dynamically discoverable creates a powerful new capability fo
 cluster managers, and empowers organizations to quickly surface new capabilities
 without the need for internal evangelizing.
 
-## Shadow Agents
+## Resource Shadowing
 
 In order to demonstrate the power of dynamic agent discovery in OpenShift we
-have implemented a "shadow" pattern, where devices in a content delivery network
+have implemented a "resource shadow" pattern, simulating a configuration where components in a content delivery network
 are deployed alongside a lightweight agent capable of debugging them or providing
 health checks.
 
