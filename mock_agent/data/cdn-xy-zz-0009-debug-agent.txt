@@ -1,0 +1,74 @@
+{
+  "device": "cdn.xy.zz.0009",
+  "timestamp": "2025-09-16T14:06:00Z",
+  "status": "WARN",
+  "score": 0.84,
+  "summary": "Degraded network performance: elevated latency and error rate; BGP neighbor flapping and interface errors detected.",
+  "metrics": {
+    "cpu_pct": 18.0,
+    "memory_pct": 62.0,
+    "disk_pct": 41.0,
+    "p95_latency_ms": 320,
+    "packet_loss_pct": 3.1,
+    "http_5xx_rate_pct": 1.8,
+    "last_metric_ts": "2025-09-16T14:05:50Z"
+  },
+  "log_snippets": [
+    {
+      "ts": "2025-09-16T14:02:10Z",
+      "level": "WARN",
+      "source": "bgpd",
+      "text": "neighbor 10.0.0.1 went DOWN (flap detected)"
+    },
+    {
+      "ts": "2025-09-16T14:02:11Z",
+      "level": "ERROR",
+      "source": "net_if",
+      "text": "eth1 carrier lost, rx_errors=129"
+    },
+    {
+      "ts": "2025-09-16T14:05:00Z",
+      "level": "INFO",
+      "source": "httpd",
+      "text": "502 response to /api/query from 192.0.2.5"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F001",
+      "type": "network",
+      "severity": "high",
+      "description": "BGP neighbor flapping observed correlated with interface errors on eth1.",
+      "evidence": ["log_snippets[0]", "log_snippets[1]", "metrics.packet_loss_pct"]
+    },
+    {
+      "id": "F002",
+      "type": "app",
+      "severity": "medium",
+      "description": "Increased HTTP 5xx rate impacting API endpoints.",
+      "evidence": ["metrics.http_5xx_rate_pct", "log_snippets[2]"]
+    }
+  ],
+  "recommended_actions": [
+    {
+      "action": "Check physical link and SFP on eth1",
+      "urgency": "high"
+    },
+    {
+      "action": "Collect BGP neighbor counters and route flaps for last 15m",
+      "urgency": "high"
+    },
+    {
+      "action": "If flapping persists, schedule bgpd restart in maintenance window",
+      "urgency": "medium"
+    },
+    {
+      "action": "Capture packets on eth1 for 2 minutes",
+      "urgency": "medium"
+    }
+  ],
+  "raw_payload_refs": {
+    "metrics_query_id": "mq-20250916-140500",
+    "logs_query_id": "lq-20250916-140500"
+  }
+}

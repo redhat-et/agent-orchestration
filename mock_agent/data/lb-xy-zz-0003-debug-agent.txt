@@ -1,0 +1,62 @@
+{
+  "device": "lb.xy.zz.0003",
+  "role": "tls_terminator",
+  "timestamp": "2025-09-16T14:45:10Z",
+  "status": "HEALTHY",
+  "score": 0.97,
+  "summary": "Load balancer healthy. Metrics normal, all backends up, no anomalies.",
+  "metrics": {
+    "cpu_pct": 14.0,
+    "memory_pct": 48.0,
+    "disk_pct": 36.0,
+    "tls_p95_handshake_ms": 22,
+    "active_connections": 3210,
+    "backend_nodes_up": 12,
+    "backend_nodes_total": 12,
+    "http_5xx_rate_pct": 0.01,
+    "last_metric_ts": "2025-09-16T14:45:05Z"
+  },
+  "log_snippets": [
+    {
+      "ts": "2025-09-16T14:44:58Z",
+      "level": "INFO",
+      "source": "tlsd",
+      "text": "certificate chain verified, CN=lb.xy.zz"
+    },
+    {
+      "ts": "2025-09-16T14:44:59Z",
+      "level": "INFO",
+      "source": "healthcheck",
+      "text": "backend 203.0.113.42:443 is UP (12/12 up)"
+    },
+    {
+      "ts": "2025-09-16T14:45:00Z",
+      "level": "INFO",
+      "source": "lb",
+      "text": "accepted new connection from 192.0.2.88, assigned to backend 7"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F200",
+      "type": "availability",
+      "severity": "none",
+      "description": "No anomalies. Device performing within expected ranges.",
+      "evidence": [
+        "metrics.cpu_pct",
+        "metrics.tls_p95_handshake_ms",
+        "metrics.backend_nodes_up"
+      ]
+    }
+  ],
+  "recommended_actions": [
+    {
+      "action": "Continue normal monitoring; check certificate expiry in 42 days",
+      "urgency": "low"
+    }
+  ],
+  "raw_payload_refs": {
+    "metrics_query_id": "mq-20250916-144505",
+    "logs_query_id": "lq-20250916-144505"
+  }
+}

@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${AGENT_NAME}
+  labels:
+    app: ${AGENT_NAME}
+    a2a.agent: "true"
+    a2a.agent.name: "${AGENT_NAME}"
+    a2a.agent.version: "0.1.0"
+  annotations:
+    a2a.agent.description: "Answers questions from a KnowledgeBase consisting of team/contributor status updates."
+    a2a.agent.skills: "status-query"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${AGENT_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${AGENT_NAME}
+        a2a.agent: "true"
+        a2a.agent.name: "${AGENT_NAME}"
+    spec:
+      containers:
+      - name: ${AGENT_NAME}
+        image: ${AGENT_NAME}:latest
+        ports:
+        - containerPort: 10000
+        env:
+        - name: PORT
+          value: "10000"
+        - name: HOST
+          value: "0.0.0.0"
+        - name: AGENT_NAME
+          value: "${AGENT_NAME}"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${AGENT_NAME}-service
+  labels:
+    app: ${AGENT_NAME}
+    a2a.agent: "true"
+    a2a.agent.name: "${AGENT_NAME}"
+spec:
+  selector:
+    app: ${AGENT_NAME}
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 10000
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: ${AGENT_NAME}
+  labels:
+    app: ${AGENT_NAME}
+    a2a.agent: "true"
+    a2a.agent.name: "${AGENT_NAME}"
+  annotations:
+    a2a.agent.endpoint: "/.well-known/agent.json"
+spec:
+  to:
+    kind: Service
+    name: ${AGENT_NAME}-service
+  port:
+    targetPort: 10000
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

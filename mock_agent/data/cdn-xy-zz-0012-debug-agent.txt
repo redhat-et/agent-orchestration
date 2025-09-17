@@ -1,0 +1,105 @@
+{
+  "device": "cdn.xy.zz.0012",
+  "role": "edge_cache",
+  "timestamp": "2025-09-16T14:30:20Z",
+  "status": "CRITICAL",
+  "score": 0.92,
+  "summary": "Edge cache node failing: disk full and OOM causing cache corruption, low hit-rate and high 5xx and backend timeouts.",
+  "metrics": {
+    "cpu_pct": 98.0,
+    "memory_pct": 87.0,
+    "disk_pct": 99.0,
+    "inodes_pct": 100.0,
+    "cache_hit_rate_pct": 12.0,
+    "cache_evictions_per_s": 1240,
+    "http_5xx_rate_pct": 18.3,
+    "backend_p95_latency_ms": 2450,
+    "last_metric_ts": "2025-09-16T14:30:10Z"
+  },
+  "log_snippets": [
+    {
+      "ts": "2025-09-16T14:27:58Z",
+      "level": "ERROR",
+      "source": "store",
+      "text": "write failed /var/cache/http/object: no space left on device"
+    },
+    {
+      "ts": "2025-09-16T14:28:02Z",
+      "level": "CRIT",
+      "source": "kernel",
+      "text": "Out of memory: Kill process 4521 (cached) score 238 or sacrifice child"
+    },
+    {
+      "ts": "2025-09-16T14:29:11Z",
+      "level": "WARN",
+      "source": "httpd",
+      "text": "503 Service Unavailable to 198.51.100.23 (backend timeout)"
+    },
+    {
+      "ts": "2025-09-16T14:29:55Z",
+      "level": "ERROR",
+      "source": "cachemgr",
+      "text": "cache metadata corrupted; failing requests until repair"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F100",
+      "type": "storage",
+      "severity": "critical",
+      "description": "Disk and inode exhaustion preventing cache writes leading to service failures.",
+      "evidence": ["metrics.disk_pct", "metrics.inodes_pct", "log_snippets[0]"]
+    },
+    {
+      "id": "F101",
+      "type": "memory",
+      "severity": "high",
+      "description": "Out-of-memory kills of cache process observed, likely due to thrashing under heavy eviction load.",
+      "evidence": ["log_snippets[1]", "metrics.cache_evictions_per_s", "metrics.memory_pct"]
+    },
+    {
+      "id": "F102",
+      "type": "availability",
+      "severity": "high",
+      "description": "High HTTP 5xx rate and backend timeouts causing user-visible failures.",
+      "evidence": ["metrics.http_5xx_rate_pct", "metrics.backend_p95_latency_ms", "log_snippets[2]"]
+    },
+    {
+      "id": "F103",
+      "type": "data_integrity",
+      "severity": "medium",
+      "description": "Cache metadata corruption detected; may require repair or reprovisioning.",
+      "evidence": ["log_snippets[3]"]
+    }
+  ],
+  "recommended_actions": [
+    {
+      "action": "Fail over traffic from cdn.xy.zz.0012 to healthy nodes and mark node as draining",
+      "urgency": "immediate"
+    },
+    {
+      "action": "Free disk space (rotate/move logs, clear temp cache) and verify inode usage",
+      "urgency": "high"
+    },
+    {
+      "action": "Attach additional storage or reprovision instance if disk remains full",
+      "urgency": "high"
+    },
+    {
+      "action": "Restart cache process after freeing space; monitor for OOM",
+      "urgency": "medium"
+    },
+    {
+      "action": "If cache metadata corruption persists, reprovision node and restore warm cache snapshot",
+      "urgency": "medium"
+    },
+    {
+      "action": "Open hardware/storage ticket for disk health check",
+      "urgency": "medium"
+    }
+  ],
+  "raw_payload_refs": {
+    "metrics_query_id": "mq-20250916-143010",
+    "logs_query_id": "lq-20250916-143010"
+  }
+}
