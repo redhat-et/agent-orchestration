@@ -1,4 +1,8 @@
-# Dynamic Agent Discovery in OpenShift Clusters
+# Dynamic Agent Discovery in OpenShift Clusters (draft)
+
+## Note
+
+A production agent discovery pattern needs at least basic security. we also have no stable best practices for deployment if agents. This is only a rough exploration of the possible implementation and use cases of combining Openshift and A2A.
 
 ## About
 
