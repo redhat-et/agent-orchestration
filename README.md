@@ -16,10 +16,10 @@ Making such agents dynamically discoverable creates a powerful new capability fo
 cluster managers, and empowers organizations to quickly surface new capabilities
 without the need for internal evangelizing.
 
-## Resource Shadowing
+## Resource Shadowing / Digital Twin Pattern
 
 In order to demonstrate the power of dynamic agent discovery in OpenShift we
-have implemented a "resource shadow" pattern, simulating a configuration where components in a content delivery network
+have implemented a "digital twin" pattern, simulating a configuration where components in a content delivery network
 are deployed alongside a lightweight agent capable of debugging them or providing
 health checks.
 
