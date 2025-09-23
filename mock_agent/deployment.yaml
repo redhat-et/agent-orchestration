@@ -4,12 +4,10 @@ metadata:
   name: ${AGENT_NAME}
   labels:
     app: ${AGENT_NAME}
-    a2a.agent: "true"
-    a2a.agent.name: "${AGENT_NAME}"
-    a2a.agent.version: "0.1.0"
+    ai.openshift.io/agent.class: "a2a"
+    ai.openshift.io/agent.name: "${AGENT_NAME}"
   annotations:
-    a2a.agent.description: "Answers questions from a KnowledgeBase consisting of team/contributor status updates."
-    a2a.agent.skills: "status-query"
+    ai.openshift.io/agent.endpoint: "/.well-known/agent.json"
 spec:
   replicas: 1
   selector:
@@ -19,8 +17,8 @@ spec:
     metadata:
       labels:
         app: ${AGENT_NAME}
-        a2a.agent: "true"
-        a2a.agent.name: "${AGENT_NAME}"
+        ai.openshift.io/agent.class: "a2a"
+        ai.openshift.io/agent.name: "${AGENT_NAME}"
     spec:
       containers:
       - name: ${AGENT_NAME}
@@ -34,6 +32,8 @@ spec:
           value: "0.0.0.0"
         - name: AGENT_NAME
           value: "${AGENT_NAME}"
+        - name: KB_FILE
+          value: "${KB_FILE}"
 ---
 apiVersion: v1
 kind: Service
@@ -41,8 +41,8 @@ metadata:
   name: ${AGENT_NAME}-service
   labels:
     app: ${AGENT_NAME}
-    a2a.agent: "true"
-    a2a.agent.name: "${AGENT_NAME}"
+    ai.openshift.io/agent.class: "a2a"
+    ai.openshift.io/agent.name: "${AGENT_NAME}"
 spec:
   selector:
     app: ${AGENT_NAME}
@@ -58,10 +58,10 @@ metadata:
   name: ${AGENT_NAME}
   labels:
     app: ${AGENT_NAME}
-    a2a.agent: "true"
-    a2a.agent.name: "${AGENT_NAME}"
+    ai.openshift.io/agent.class: "a2a"
+    ai.openshift.io/agent.name: "${AGENT_NAME}"
   annotations:
-    a2a.agent.endpoint: "/.well-known/agent.json"
+    ai.openshift.io/agent.endpoint: "/.well-known/agent.json"
 spec:
   to:
     kind: Service

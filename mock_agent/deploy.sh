@@ -35,7 +35,7 @@ oc start-build $AGENT_NAME --from-dir=. --follow
 
 # Apply the deployment configuration
 echo "Applying deployment configuration..."
-AGENT_NAME=$AGENT_NAME envsubst < deployment.yaml | oc apply -f -
+AGENT_NAME=$AGENT_NAME KB_FILE="./data/cdn-xy-zz-0009-debug-agent.txt" envsubst < deployment.yaml | oc apply -f -
 
 # Get the route hostname
 echo "Getting route information..."
@@ -94,9 +94,8 @@ echo "   Agent URL: https://$ROUTE_HOST"
 echo "   Agent Card: https://$ROUTE_HOST/.well-known/agent.json"
 echo ""
 echo "Discovery labels added:"
-echo "   a2a.agent=true"
-echo "   a2a.agent.name=$AGENT_NAME"
-echo "   a2a.agent.version=0.1.0"
+echo "   ai.openshift.io/agent.class=a2a"
+echo "   ai.openshift.io/agent.name=$AGENT_NAME"
 echo ""
 echo "Useful commands:"
 echo "   View logs: oc logs -l app=$AGENT_NAME -f"

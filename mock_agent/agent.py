@@ -100,13 +100,15 @@ def get_base_url(host: str, port: int) -> str:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--kb", required=True, type=Path, help="Path to status text file")
+    ap.add_argument("--kb", type=Path, help="Path to status text file (overrides KB_FILE env var)")
     ap.add_argument("--host", default=os.getenv("HOST", "0.0.0.0"))
     ap.add_argument("--port", type=int, default=int(os.getenv("PORT", "10000")))
     ap.add_argument("--base-url", help="Override base URL (auto-detected if not provided)")
     args = ap.parse_args()
 
-    kb = StatusKB.from_file(args.kb)
+    # Use KB_FILE env var if --kb not provided
+    kb_path = args.kb or Path(os.getenv("KB_FILE", "./data/cdn-xy-zz-0009-debug-agent.txt"))
+    kb = StatusKB.from_file(kb_path)
     agent = MockAgent(kb)
     executor = MockAgentExecutor(agent)
 

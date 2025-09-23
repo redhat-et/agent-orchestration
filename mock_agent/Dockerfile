@@ -16,4 +16,4 @@ RUN uv pip install --system "a2a-sdk[http-server]" uvicorn
 EXPOSE 10000
 
 # Run the agent
-CMD ["sh", "-c", "python agent.py --kb ./data/${AGENT_NAME}.txt --host 0.0.0.0 --port 10000"]
+CMD ["python", "agent.py", "--host", "0.0.0.0", "--port", "10000"]
