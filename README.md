@@ -1,4 +1,4 @@
-# OpenShift Dynamic Agent Patterns (Proof of Concept)
+# First Class Agents in OpenShift
 
 ## Note
 
