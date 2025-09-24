@@ -1,0 +1,114 @@
+{
+  "queue_system": "prod-rabbitmq-cluster",
+  "cluster_nodes": ["rmq-01", "rmq-02", "rmq-03"],
+  "timestamp": "2025-09-23T16:45:25Z",
+  "status": "CRITICAL",
+  "score": 0.58,
+  "summary": "Message queue cluster under severe strain with growing backlogs and consumer lag. Order processing queue backing up due to slow consumer performance and potential poison messages causing repeated failures.",
+  "metrics": {
+    "total_queues": 24,
+    "total_messages": 89420,
+    "unacked_messages": 12847,
+    "messages_per_second": 450,
+    "consumer_count": 18,
+    "consumer_utilization_pct": 34.2,
+    "memory_usage_pct": 87.0,
+    "disk_usage_pct": 72.0,
+    "connection_count": 156,
+    "channel_count": 298,
+    "publish_rate_per_sec": 520,
+    "consume_rate_per_sec": 380,
+    "last_metric_ts": "2025-09-23T16:45:20Z"
+  },
+  "log_snippets": [
+    {
+      "ts": "2025-09-23T16:42:15Z",
+      "level": "ERROR",
+      "source": "order-processor",
+      "text": "Message rejected and requeued 5 times: malformed JSON in order payload (msg_id: 7f8a9b2c)"
+    },
+    {
+      "ts": "2025-09-23T16:43:30Z",
+      "level": "WARN",
+      "source": "rabbitmq",
+      "text": "Queue 'order.processing' length exceeded threshold: 45,000 messages (max: 10,000)"
+    },
+    {
+      "ts": "2025-09-23T16:44:05Z",
+      "level": "CRITICAL",
+      "source": "consumer",
+      "text": "Email notification consumer down: connection refused to SMTP server"
+    },
+    {
+      "ts": "2025-09-23T16:44:50Z",
+      "level": "WARN",
+      "source": "cluster",
+      "text": "Node rmq-02 memory usage 92%, approaching high watermark"
+    }
+  ],
+  "findings": [
+    {
+      "id": "MQ001",
+      "type": "queue_backlog",
+      "severity": "critical",
+      "description": "Order processing queue severely backed up with 45k messages, consuming faster than producing.",
+      "evidence": ["log_snippets[1]", "metrics.total_messages", "metrics.publish_rate_per_sec", "metrics.consume_rate_per_sec"]
+    },
+    {
+      "id": "MQ002",
+      "type": "poison_messages",
+      "severity": "high",
+      "description": "Malformed messages causing repeated processing failures and consumer retries.",
+      "evidence": ["log_snippets[0]", "metrics.unacked_messages"]
+    },
+    {
+      "id": "MQ003",
+      "type": "consumer_failure",
+      "severity": "high",
+      "description": "Critical email notification consumer offline, preventing order confirmations.",
+      "evidence": ["log_snippets[2]", "metrics.consumer_utilization_pct"]
+    },
+    {
+      "id": "MQ004",
+      "type": "resource_pressure",
+      "severity": "medium",
+      "description": "Cluster node approaching memory limits which could trigger flow control.",
+      "evidence": ["log_snippets[3]", "metrics.memory_usage_pct"]
+    }
+  ],
+  "recommended_actions": [
+    {
+      "action": "Immediately purge poison message 7f8a9b2c and implement dead letter queue for malformed orders",
+      "urgency": "immediate"
+    },
+    {
+      "action": "Scale up order processing consumers from 6 to 12 instances to clear backlog",
+      "urgency": "immediate"
+    },
+    {
+      "action": "Restart email notification consumer and investigate SMTP connectivity issue",
+      "urgency": "high"
+    },
+    {
+      "action": "Add memory to rmq-02 node or rebalance queues across cluster",
+      "urgency": "high"
+    },
+    {
+      "action": "Implement message validation at producer level to prevent malformed payloads",
+      "urgency": "medium"
+    },
+    {
+      "action": "Set up queue length monitoring alerts for thresholds above 5,000 messages",
+      "urgency": "medium"
+    },
+    {
+      "action": "Review and optimize consumer processing logic for better throughput",
+      "urgency": "low"
+    }
+  ],
+  "raw_payload_refs": {
+    "metrics_query_id": "mq-mq-20250923-164520",
+    "management_api_id": "rmq-api-20250923-164520",
+    "consumer_logs_id": "cl-20250923-164520"
+  }
+}

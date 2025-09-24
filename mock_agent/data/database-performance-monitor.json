@@ -1,0 +1,91 @@
+{
+  "database": "prod-orders-db-primary",
+  "role": "mysql_primary",
+  "timestamp": "2025-09-23T15:30:45Z",
+  "status": "WARN",
+  "score": 0.76,
+  "summary": "Database experiencing elevated query latency and connection pool pressure. Several slow queries detected and deadlock frequency increasing.",
+  "metrics": {
+    "cpu_pct": 85.0,
+    "memory_pct": 91.0,
+    "disk_io_pct": 78.0,
+    "active_connections": 147,
+    "max_connections": 150,
+    "avg_query_time_ms": 245,
+    "slow_queries_per_min": 18,
+    "deadlocks_per_hour": 12,
+    "innodb_buffer_pool_hit_rate": 0.94,
+    "replication_lag_seconds": 0.8,
+    "last_metric_ts": "2025-09-23T15:30:40Z"
+  },
+  "log_snippets": [
+    {
+      "ts": "2025-09-23T15:28:15Z",
+      "level": "WARN",
+      "source": "mysqld",
+      "text": "Long query detected: SELECT * FROM orders o JOIN customers c WHERE o.status='pending' (2.4s)"
+    },
+    {
+      "ts": "2025-09-23T15:29:32Z",
+      "level": "ERROR",
+      "source": "mysqld",
+      "text": "Deadlock found when trying to get lock; transaction rolled back (errno: 1213)"
+    },
+    {
+      "ts": "2025-09-23T15:30:01Z",
+      "level": "WARN",
+      "source": "mysqld",
+      "text": "Connection pool nearly full: 147/150 connections active"
+    }
+  ],
+  "findings": [
+    {
+      "id": "DB001",
+      "type": "performance",
+      "severity": "high",
+      "description": "Multiple slow queries without proper indexing causing table scans on large orders table.",
+      "evidence": ["log_snippets[0]", "metrics.avg_query_time_ms", "metrics.slow_queries_per_min"]
+    },
+    {
+      "id": "DB002",
+      "type": "concurrency",
+      "severity": "medium",
+      "description": "Increasing deadlock frequency suggests contention on order status updates.",
+      "evidence": ["log_snippets[1]", "metrics.deadlocks_per_hour"]
+    },
+    {
+      "id": "DB003",
+      "type": "capacity",
+      "severity": "high",
+      "description": "Connection pool exhaustion imminent; may start rejecting new connections.",
+      "evidence": ["metrics.active_connections", "metrics.max_connections", "log_snippets[2]"]
+    }
+  ],
+  "recommended_actions": [
+    {
+      "action": "Add composite index on orders(status, created_at) to optimize pending order queries",
+      "urgency": "high"
+    },
+    {
+      "action": "Increase max_connections to 200 and monitor connection pool usage",
+      "urgency": "high"
+    },
+    {
+      "action": "Review application code for long-running transactions causing deadlocks",
+      "urgency": "medium"
+    },
+    {
+      "action": "Enable query cache and optimize buffer pool size if memory allows",
+      "urgency": "medium"
+    },
+    {
+      "action": "Set up read replica routing for non-critical SELECT queries",
+      "urgency": "low"
+    }
+  ],
+  "raw_payload_refs": {
+    "metrics_query_id": "db-mq-20250923-153040",
+    "logs_query_id": "db-lq-20250923-153040",
+    "explain_plan_id": "ep-20250923-153040"
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "system": "prod-security-perimeter",
+  "scope": "authentication_and_access",
+  "timestamp": "2025-09-23T16:15:10Z",
+  "status": "CRITICAL",
+  "score": 0.62,
+  "summary": "Multiple security events detected: brute force attacks on admin endpoints, suspicious API key usage, and potential privilege escalation attempts from compromised service account.",
+  "metrics": {
+    "failed_login_attempts_1h": 247,
+    "successful_logins_1h": 89,
+    "blocked_ips_count": 12,
+    "api_requests_anomalous": 34,
+    "privilege_escalation_attempts": 3,
+    "malformed_requests_pct": 8.2,
+    "geographic_anomalies": 5,
+    "avg_session_duration_min": 28,
+    "last_metric_ts": "2025-09-23T16:15:05Z"
+  },
+  "log_snippets": [
+    {
+      "ts": "2025-09-23T16:10:22Z",
+      "level": "ALERT",
+      "source": "auth-service",
+      "text": "Brute force detected: 45 failed attempts for admin@company.com from 185.220.100.240"
+    },
+    {
+      "ts": "2025-09-23T16:11:58Z",
+      "level": "WARN",
+      "source": "api-gateway",
+      "text": "API key sk-prod-7f8a9b used from unusual location: Belarus (historical: US-East)"
+    },
+    {
+      "ts": "2025-09-23T16:13:15Z",
+      "level": "CRITICAL",
+      "source": "rbac-controller",
+      "text": "Service account 'data-processor' attempted to access admin role permissions"
+    },
+    {
+      "ts": "2025-09-23T16:14:03Z",
+      "level": "ERROR",
+      "source": "waf",
+      "text": "SQL injection attempt blocked: payload '1' UNION SELECT password FROM users--' from 203.0.113.45"
+    }
+  ],
+  "findings": [
+    {
+      "id": "SEC001",
+      "type": "brute_force",
+      "severity": "critical",
+      "description": "Coordinated brute force attack targeting admin accounts from multiple suspicious IP addresses.",
+      "evidence": ["log_snippets[0]", "metrics.failed_login_attempts_1h", "metrics.blocked_ips_count"]
+    },
+    {
+      "id": "SEC002",
+      "type": "compromised_credentials",
+      "severity": "high",
+      "description": "Production API key being used from unexpected geographic location suggesting potential compromise.",
+      "evidence": ["log_snippets[1]", "metrics.geographic_anomalies"]
+    },
+    {
+      "id": "SEC003",
+      "type": "privilege_escalation",
+      "severity": "high",
+      "description": "Service account attempting unauthorized privilege escalation, possibly indicating lateral movement.",
+      "evidence": ["log_snippets[2]", "metrics.privilege_escalation_attempts"]
+    },
+    {
+      "id": "SEC004",
+      "type": "injection_attack",
+      "severity": "medium",
+      "description": "Multiple SQL injection attempts blocked, indicating active probing of database vulnerabilities.",
+      "evidence": ["log_snippets[3]", "metrics.malformed_requests_pct"]
+    }
+  ],
+  "recommended_actions": [
+    {
+      "action": "Immediately revoke API key sk-prod-7f8a9b and investigate account compromise",
+      "urgency": "immediate"
+    },
+    {
+      "action": "Block IP range 185.220.100.0/24 and investigate coordinated attack pattern",
+      "urgency": "immediate"
+    },
+    {
+      "action": "Rotate credentials for 'data-processor' service account and audit permissions",
+      "urgency": "high"
+    },
+    {
+      "action": "Enable MFA for all admin accounts and force password reset for admin@company.com",
+      "urgency": "high"
+    },
+    {
+      "action": "Implement rate limiting on authentication endpoints (5 attempts per minute)",
+      "urgency": "medium"
+    },
+    {
+      "action": "Set up geo-location alerts for API keys used outside normal regions",
+      "urgency": "medium"
+    },
+    {
+      "action": "Review and harden SQL injection protection rules in WAF",
+      "urgency": "low"
+    }
+  ],
+  "raw_payload_refs": {
+    "security_query_id": "sec-mq-20250923-161505",
+    "threat_intel_id": "ti-20250923-161505",
+    "incident_id": "inc-20250923-161505"
+  }
+}

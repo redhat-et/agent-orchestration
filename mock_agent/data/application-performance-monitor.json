@@ -1,0 +1,114 @@
+{
+  "application": "ecommerce-api",
+  "version": "v2.4.1",
+  "environment": "production",
+  "timestamp": "2025-09-23T16:00:30Z",
+  "status": "WARN",
+  "score": 0.79,
+  "summary": "Application showing signs of memory leak and degraded response times. Cart service experiencing high garbage collection overhead and checkout endpoint timeouts increasing.",
+  "metrics": {
+    "requests_per_second": 450,
+    "avg_response_time_ms": 340,
+    "p95_response_time_ms": 850,
+    "p99_response_time_ms": 1200,
+    "error_rate_pct": 2.4,
+    "heap_memory_used_mb": 1847,
+    "heap_memory_max_mb": 2048,
+    "gc_time_pct": 15.2,
+    "thread_pool_active": 87,
+    "thread_pool_max": 100,
+    "cache_hit_rate_pct": 84.2,
+    "last_metric_ts": "2025-09-23T16:00:25Z"
+  },
+  "log_snippets": [
+    {
+      "ts": "2025-09-23T15:58:45Z",
+      "level": "WARN",
+      "source": "gc",
+      "text": "Full GC triggered: heap usage 95%, collection took 2.1s"
+    },
+    {
+      "ts": "2025-09-23T15:59:12Z",
+      "level": "ERROR",
+      "source": "cart-service",
+      "text": "OutOfMemoryError: unable to create new native thread"
+    },
+    {
+      "ts": "2025-09-23T15:59:38Z",
+      "level": "WARN",
+      "source": "http-pool",
+      "text": "Request timeout: POST /api/checkout exceeded 30s limit"
+    },
+    {
+      "ts": "2025-09-23T16:00:01Z",
+      "level": "ERROR",
+      "source": "payment-processor",
+      "text": "Connection pool exhausted: 0 of 20 connections available"
+    }
+  ],
+  "findings": [
+    {
+      "id": "APP001",
+      "type": "memory_leak",
+      "severity": "high",
+      "description": "Memory usage climbing steadily with frequent full GC cycles indicating potential leak in cart service.",
+      "evidence": ["log_snippets[0]", "log_snippets[1]", "metrics.heap_memory_used_mb", "metrics.gc_time_pct"]
+    },
+    {
+      "id": "APP002",
+      "type": "performance_degradation",
+      "severity": "medium",
+      "description": "Response times degrading, particularly P95/P99 latencies affecting user experience.",
+      "evidence": ["metrics.p95_response_time_ms", "metrics.p99_response_time_ms", "metrics.avg_response_time_ms"]
+    },
+    {
+      "id": "APP003",
+      "type": "resource_exhaustion",
+      "severity": "high",
+      "description": "Thread pool and database connection pool nearing capacity, may cause cascading failures.",
+      "evidence": ["log_snippets[3]", "metrics.thread_pool_active", "log_snippets[2]"]
+    },
+    {
+      "id": "APP004",
+      "type": "error_rate",
+      "severity": "medium",
+      "description": "Error rate elevated above normal baseline of 0.5%, indicating system stress.",
+      "evidence": ["metrics.error_rate_pct"]
+    }
+  ],
+  "recommended_actions": [
+    {
+      "action": "Generate heap dump and analyze for memory leaks in cart session management",
+      "urgency": "immediate"
+    },
+    {
+      "action": "Restart cart service instances to clear memory and implement rolling restart schedule",
+      "urgency": "high"
+    },
+    {
+      "action": "Increase JVM heap size to 4GB and tune GC settings for better performance",
+      "urgency": "high"
+    },
+    {
+      "action": "Scale up database connection pool from 20 to 40 connections",
+      "urgency": "medium"
+    },
+    {
+      "action": "Implement circuit breaker pattern for external payment service calls",
+      "urgency": "medium"
+    },
+    {
+      "action": "Add application-level monitoring alerts for heap usage > 85%",
+      "urgency": "low"
+    },
+    {
+      "action": "Review and optimize cart cleanup job to prevent memory accumulation",
+      "urgency": "low"
+    }
+  ],
+  "raw_payload_refs": {
+    "metrics_query_id": "app-mq-20250923-160025",
+    "logs_query_id": "app-lq-20250923-160025",
+    "trace_id": "trace-20250923-160025"
+  }
+}

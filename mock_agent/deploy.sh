@@ -35,7 +35,7 @@ oc start-build $AGENT_NAME --from-dir=. --follow
 
 # Apply the deployment configuration
 echo "Applying deployment configuration..."
-AGENT_NAME=$AGENT_NAME KB_FILE="./data/cdn-xy-zz-0009-debug-agent.txt" envsubst < deployment.yaml | oc apply -f -
+AGENT_NAME=$AGENT_NAME KB_FILE="${KB_FILE:-./data/default}" envsubst < deployment.yaml | oc apply -f -
 
 # Get the route hostname
 echo "Getting route information..."

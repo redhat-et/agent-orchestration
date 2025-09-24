@@ -1,0 +1,113 @@
+{
+  "pipeline": "ecommerce-backend-main",
+  "repository": "company/ecommerce-backend",
+  "branch": "main",
+  "timestamp": "2025-09-23T16:30:15Z",
+  "status": "WARN",
+  "score": 0.71,
+  "summary": "CI/CD pipeline experiencing build instability and test flakiness. Deployment success rate declining with increasing build times and intermittent test failures in integration suite.",
+  "metrics": {
+    "builds_last_24h": 28,
+    "successful_builds": 19,
+    "failed_builds": 9,
+    "success_rate_pct": 67.9,
+    "avg_build_time_min": 18.5,
+    "avg_test_time_min": 12.3,
+    "flaky_test_count": 7,
+    "deployment_success_rate_pct": 85.7,
+    "avg_deployment_time_min": 8.2,
+    "last_successful_deploy": "2025-09-23T14:45:30Z",
+    "last_metric_ts": "2025-09-23T16:30:10Z"
+  },
+  "log_snippets": [
+    {
+      "ts": "2025-09-23T16:25:45Z",
+      "level": "ERROR",
+      "source": "jest",
+      "text": "Test failed: integration/payment.test.js - PaymentService timeout after 30000ms"
+    },
+    {
+      "ts": "2025-09-23T16:26:12Z",
+      "level": "WARN",
+      "source": "docker",
+      "text": "Build step 8/12 failed: npm install timeout - retrying (attempt 2/3)"
+    },
+    {
+      "ts": "2025-09-23T16:27:30Z",
+      "level": "ERROR",
+      "source": "terraform",
+      "text": "Apply failed: Error creating AWS ECS service: throttling exceeded (retryable)"
+    },
+    {
+      "ts": "2025-09-23T16:28:45Z",
+      "level": "WARN",
+      "source": "sonarqube",
+      "text": "Quality gate failed: code coverage dropped to 78% (threshold: 80%)"
+    }
+  ],
+  "findings": [
+    {
+      "id": "CI001",
+      "type": "test_instability",
+      "severity": "high",
+      "description": "Payment integration tests showing frequent timeouts indicating external service dependency issues.",
+      "evidence": ["log_snippets[0]", "metrics.flaky_test_count", "metrics.failed_builds"]
+    },
+    {
+      "id": "CI002",
+      "type": "build_performance",
+      "severity": "medium",
+      "description": "Docker build steps experiencing timeouts and retries, increasing overall build duration.",
+      "evidence": ["log_snippets[1]", "metrics.avg_build_time_min"]
+    },
+    {
+      "id": "CI003",
+      "type": "deployment_reliability",
+      "severity": "medium",
+      "description": "Infrastructure provisioning hitting AWS rate limits causing deployment failures.",
+      "evidence": ["log_snippets[2]", "metrics.deployment_success_rate_pct"]
+    },
+    {
+      "id": "CI004",
+      "type": "code_quality",
+      "severity": "low",
+      "description": "Code coverage regression below quality threshold requiring attention.",
+      "evidence": ["log_snippets[3]"]
+    }
+  ],
+  "recommended_actions": [
+    {
+      "action": "Add test retries and circuit breaker for payment service integration tests",
+      "urgency": "high"
+    },
+    {
+      "action": "Implement Docker layer caching and optimize npm install with package-lock caching",
+      "urgency": "high"
+    },
+    {
+      "action": "Configure exponential backoff for Terraform AWS API calls and increase timeout",
+      "urgency": "medium"
+    },
+    {
+      "action": "Investigate and add unit tests to restore code coverage above 80%",
+      "urgency": "medium"
+    },
+    {
+      "action": "Set up build pipeline monitoring dashboard for early failure detection",
+      "urgency": "medium"
+    },
+    {
+      "action": "Review and quarantine consistently flaky tests until dependencies are stabilized",
+      "urgency": "low"
+    },
+    {
+      "action": "Implement parallel test execution to reduce overall test suite runtime",
+      "urgency": "low"
+    }
+  ],
+  "raw_payload_refs": {
+    "build_query_id": "ci-mq-20250923-163010",
+    "test_results_id": "tr-20250923-163010",
+    "deployment_logs_id": "dl-20250923-163010"
+  }
+}

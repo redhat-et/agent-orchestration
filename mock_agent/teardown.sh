@@ -65,6 +65,10 @@ delete_resource buildconfig $AGENT_NAME
 echo "Removing image stream..."
 delete_resource imagestream $AGENT_NAME
 
+# Delete agent entry 
+echo "Removing image stream..."
+delete_resource agent $AGENT_NAME
+
 # Clean up any remaining builds
 echo "Cleaning up builds..."
 BUILDS=$(oc get builds -l build=$AGENT_NAME -o name 2>/dev/null || echo "")
