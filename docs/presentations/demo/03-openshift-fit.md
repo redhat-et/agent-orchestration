@@ -1,6 +1,6 @@
 # ☸️ Why OpenShift?
 
-- Already provides **CRDs, controllers, APIs**  
+- Already provides primitives necessary for integrating all layers of the agentic stack, including discovery. 
 - Perfect substrate for **durable agent models**  
 - We can model agents as **first-class resources**
 
