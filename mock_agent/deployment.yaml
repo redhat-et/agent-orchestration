@@ -25,6 +25,8 @@ spec:
         image: ${AGENT_NAME}:latest
         ports:
         - containerPort: 10000
+        command: ["python3", "agent.py"]
+        args: ["--config", "${CONFIG_ARG}"]
         env:
         - name: PORT
           value: "10000"

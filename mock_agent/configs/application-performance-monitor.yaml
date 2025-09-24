@@ -1,0 +1,30 @@
+# Agent configuration for application-performance-monitor
+agent:
+  name: "Application Performance Monitor"
+  description: "Monitors application performance metrics, identifies bottlenecks, and provides optimization recommendations for cloud-native applications."
+  version: "1.0.0"
+  capabilities: {}
+  default_input_modes:
+    - "text/plain"
+    - "application/json"
+  default_output_modes:
+    - "text/plain"
+    - "application/json"
+  skills:
+    - id: "performance-analysis"
+      name: "Performance Analysis"
+      description: "Analyze application performance metrics and identify bottlenecks"
+      input_modes: ["text/plain", "application/json"]
+      output_modes: ["text/plain", "application/json"]
+      tags: ["performance", "monitoring", "analysis"]
+    - id: "memory-analysis"
+      name: "Memory Analysis"
+      description: "Detect memory leaks and garbage collection issues"
+      input_modes: ["text/plain", "application/json"]
+      output_modes: ["text/plain", "application/json"]
+      tags: ["memory", "gc", "leak-detection"]
+
+# Knowledge base configuration
+knowledge_base:
+  file: "./data/application-performance-monitor.json"
+  type: "json"

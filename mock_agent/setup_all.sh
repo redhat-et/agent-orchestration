@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for file in ./data/*.json; do
-    filename=$(basename "$file" .json)
-    KB_FILE="$file" ./deploy.sh "$filename"
+for config in ./configs/*.yaml; do
+    filename=$(basename "$config" .yaml)
+    ./deploy.sh "$filename" "$config"
 done

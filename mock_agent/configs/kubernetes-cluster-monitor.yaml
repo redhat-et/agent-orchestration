@@ -1,0 +1,30 @@
+# Agent configuration for kubernetes-cluster-monitor
+agent:
+  name: "Kubernetes Cluster Monitor"
+  description: "Monitors Kubernetes cluster health, resource utilization, and pod lifecycle events to ensure optimal cluster operations."
+  version: "1.0.0"
+  capabilities: {}
+  default_input_modes:
+    - "text/plain"
+    - "application/json"
+  default_output_modes:
+    - "text/plain"
+    - "application/json"
+  skills:
+    - id: "cluster-health"
+      name: "Cluster Health Analysis"
+      description: "Analyze overall cluster health and resource utilization"
+      input_modes: ["text/plain", "application/json"]
+      output_modes: ["text/plain", "application/json"]
+      tags: ["kubernetes", "cluster", "health"]
+    - id: "pod-monitoring"
+      name: "Pod Lifecycle Monitoring"
+      description: "Monitor pod lifecycle events and scheduling patterns"
+      input_modes: ["text/plain", "application/json"]
+      output_modes: ["text/plain", "application/json"]
+      tags: ["kubernetes", "pods", "lifecycle"]
+
+# Knowledge base configuration
+knowledge_base:
+  file: "./data/kubernetes-cluster-monitor.json"
+  type: "json"

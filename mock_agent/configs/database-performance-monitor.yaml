@@ -1,0 +1,30 @@
+# Agent configuration for database-performance-monitor
+agent:
+  name: "Database Performance Monitor"
+  description: "Monitors database performance metrics, query execution times, and connection pool health for optimal data layer performance."
+  version: "1.0.0"
+  capabilities: {}
+  default_input_modes:
+    - "text/plain"
+    - "application/json"
+  default_output_modes:
+    - "text/plain"
+    - "application/json"
+  skills:
+    - id: "query-analysis"
+      name: "Query Analysis"
+      description: "Analyze database query performance and identify slow queries"
+      input_modes: ["text/plain", "application/json"]
+      output_modes: ["text/plain", "application/json"]
+      tags: ["database", "query", "performance"]
+    - id: "connection-monitoring"
+      name: "Connection Monitoring"
+      description: "Monitor database connection pool health and usage patterns"
+      input_modes: ["text/plain", "application/json"]
+      output_modes: ["text/plain", "application/json"]
+      tags: ["database", "connections", "monitoring"]
+
+# Knowledge base configuration
+knowledge_base:
+  file: "./data/database-performance-monitor.json"
+  type: "json"
