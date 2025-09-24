@@ -9,8 +9,8 @@
 | 6. Input / Interaction | Capture intent, structure inputs | Slack Bot, Webhook, Chat | **Consolidating** |
 | 5. Discovery & Registry | Publish & resolve agent/tool capabilities | A2A cards, NANDA index | **Experimental** |
 | 4. Orchestration & Planning | DAGs, schedulers, planners | LangGraph, CrewAI, AutoGen | **Fragmented** |
-| 3. Messaging | Agent-to-agent communication | A2A, ACP | **Consolidating** |
-| 2. Tool Interface | Tool negotiation & contracts | MCP | **Consolidating** |
+| 3. Messaging | Agent-to-agent communication | A2A, A̶C̶P̶ | **Consolidating** |
+| 2. Tool Interface | Tool negotiation & contracts | MCP, Direct Calling, UTCP | **Consolidating** |
 | 1. Execution Plane | Run models & tools | vLLM, Ollama, APIs | **Consolidating** |
 
 ---
