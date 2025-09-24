@@ -1,4 +1,4 @@
-# First Class Agents in OpenShift
+# First Class Agents in OpenShift (Demo)
 
 ## Note
 
