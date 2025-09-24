@@ -34,8 +34,8 @@ spec:
           value: "0.0.0.0"
         - name: AGENT_NAME
           value: "${AGENT_NAME}"
-        - name: KB_FILE
-          value: "${KB_FILE}"
+        - name: CONFIG_FILE
+          value: "${CONFIG_FILE}"
 ---
 apiVersion: v1
 kind: Service
