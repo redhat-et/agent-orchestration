@@ -1,3 +1,7 @@
+
+
+
+
 # 🌀 Agentic Architectural Patterns
 
 ## The "Twin" Pattern

@@ -1,3 +1,6 @@
+
+
+
 # ⁉️ Designing an Agentic Platform, Where to Begin?
 
 **The Goal:**  
