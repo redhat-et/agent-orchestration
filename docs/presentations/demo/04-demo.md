@@ -3,16 +3,16 @@
 ### OpenShift CLI
 ```bash
 oc get agents
-oc get agent-card <agent-name>
+oc describe agent <agent-name>
 ```
 
   - oc get agents → list available agents
-  - oc get agent-card → fetch capabilities & endpoints
+  - oc describe agent → fetch capabilities & endpoints
 
 ### Agent Card
-  - Identity + metadata
+  - Identity (supports signatures) + metadata
   - Capability contract
-  - Bootstrap for runtime communication
+  - Bootstrap for runtime communication 
 
 ### MCP Server
   - Consumes agent cards
