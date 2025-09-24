@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-This is a mock agent, meant to return static responses to queries. 
+This is a mock agent, meant to return static responses to queries.
 
 Its purpose is to help debug multi-agent architectures by acting as
 a constant in the system.
@@ -27,7 +27,7 @@ from a2a.utils import new_agent_text_message
 class StatusKB:
     def __init__(self, text: str):
         # Store lines with simple normalization
-        self.text: str = text 
+        self.text: str = text
 
     @classmethod
     def from_file(cls, path: Path) -> "StatusKB":
@@ -60,64 +60,67 @@ class MockAgentExecutor(AgentExecutor):
         await event_queue.enqueue_event(new_agent_text_message(result))
 
     async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:
-        raise Exception(f"cancel not supported, args: {context} event_queue: {event_queue}")
+        raise Exception(
+            f"cancel not supported, args: {context} event_queue: {event_queue}"
+        )
 
 
 def load_agent_config(config_path: Optional[Path] = None) -> Dict[str, Any]:
     """Load agent configuration from YAML file."""
     if config_path and config_path.exists():
-        with open(config_path, 'r', encoding='utf-8') as f:
+        with open(config_path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f)
 
     # Return default config if no file specified or file doesn't exist
     return {
-        'agent': {
-            'name': 'mock-agent',
-            'description': 'A mock agent, used for testing agentic systems.',
-            'version': '0.1.0',
-            'capabilities': {},
-            'default_input_modes': ['text/plain'],
-            'default_output_modes': ['text/plain'],
-            'skills': [{
-                'id': 'status-query',
-                'name': 'Query status log',
-                'description': 'Find status lines relevant to a user question.',
-                'input_modes': ['text/plain'],
-                'output_modes': ['text/plain'],
-                'tags': ['query', 'status']
-            }]
+        "agent": {
+            "name": "mock-agent",
+            "description": "A mock agent, used for testing agentic systems.",
+            "version": "0.1.0",
+            "capabilities": {},
+            "default_input_modes": ["text/plain"],
+            "default_output_modes": ["text/plain"],
+            "skills": [
+                {
+                    "id": "status-query",
+                    "name": "Query status log",
+                    "description": "Find status lines relevant to a user question.",
+                    "input_modes": ["text/plain"],
+                    "output_modes": ["text/plain"],
+                    "tags": ["query", "status"],
+                }
+            ],
         },
-        'knowledge_base': {
-            'file': './data/default',
-            'type': 'text'
-        }
+        "knowledge_base": {"file": "./data/default", "type": "text"},
     }
 
 
 def build_agent_card(base_url: str, config: Dict[str, Any]) -> AgentCard:
     """Build agent card from configuration."""
-    agent_config = config['agent']
+    agent_config = config["agent"]
 
     # Build skills from config
     skills = []
-    for skill_config in agent_config.get('skills', []):
-        skills.append(AgentSkill(
-            id=skill_config['id'],
-            name=skill_config['name'],
-            description=skill_config['description'],
-            input_modes=skill_config['input_modes'],
-            output_modes=skill_config['output_modes'],
-            tags=skill_config.get('tags', [])
-        ))
+    for skill_config in agent_config.get("skills", []):
+        skills.append(
+            AgentSkill(
+                id=skill_config["id"],
+                name=skill_config["name"],
+                description=skill_config["description"],
+                input_modes=skill_config["input_modes"],
+                output_modes=skill_config["output_modes"],
+                tags=skill_config.get("tags", []),
+            )
+        )
 
     return AgentCard(
-        name=agent_config['name'],
-        description=agent_config['description'],
-        version=agent_config['version'],
+        name=agent_config["name"],
+        description=agent_config["description"],
+        version=agent_config["version"],
         url=base_url,
         capabilities=AgentCapabilities(),  # use default empty capabilities
-        default_input_modes=agent_config['default_input_modes'],
-        default_output_modes=agent_config['default_output_modes'],
+        default_input_modes=agent_config["default_input_modes"],
+        default_output_modes=agent_config["default_output_modes"],
         skills=skills,
     )
 
@@ -138,11 +141,21 @@ def get_base_url(host: str, port: int) -> str:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--config", type=Path, help="Path to agent config YAML file (overrides CONFIG_FILE env var)")
-    ap.add_argument("--kb", type=Path, help="Path to status text file (overrides KB_FILE env var and config)")
+    ap.add_argument(
+        "--config",
+        type=Path,
+        help="Path to agent config YAML file (overrides CONFIG_FILE env var)",
+    )
+    ap.add_argument(
+        "--kb",
+        type=Path,
+        help="Path to status text file (overrides KB_FILE env var and config)",
+    )
     ap.add_argument("--host", default=os.getenv("HOST", "0.0.0.0"))
     ap.add_argument("--port", type=int, default=int(os.getenv("PORT", "10000")))
-    ap.add_argument("--base-url", help="Override base URL (auto-detected if not provided)")
+    ap.add_argument(
+        "--base-url", help="Override base URL (auto-detected if not provided)"
+    )
     args = ap.parse_args()
 
     # Load agent configuration
@@ -155,7 +168,7 @@ def main():
     elif os.getenv("KB_FILE"):
         kb_path = Path(os.getenv("KB_FILE"))
     else:
-        kb_path = Path(config['knowledge_base']['file'])
+        kb_path = Path(config["knowledge_base"]["file"])
 
     kb = StatusKB.from_file(kb_path)
     agent = MockAgent(kb)
@@ -174,6 +187,7 @@ def main():
     print("Agent card at /.well-known/agent.json")
 
     import uvicorn
+
     fastapi_app = app.build()
     uvicorn.run(fastapi_app, host=args.host, port=args.port)
 

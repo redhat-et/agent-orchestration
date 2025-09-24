@@ -19,8 +19,7 @@ from kubernetes.client.rest import ApiException
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -88,7 +87,9 @@ class AgentController:
 
         agent_name = labels.get(AGENT_NAME_LABEL)
         if not agent_name:
-            logger.warning(f"Resource {metadata.get('name')} has agent class but no agent name")
+            logger.warning(
+                f"Resource {metadata.get('name')} has agent class but no agent name"
+            )
             return None
 
         # Extract agent information
@@ -97,13 +98,15 @@ class AgentController:
             "name": agent_name,
             "version": labels.get(AGENT_VERSION_LABEL, "unknown"),
             "description": annotations.get(AGENT_DESCRIPTION_ANNOTATION, ""),
-            "endpoint": annotations.get(AGENT_ENDPOINT_ANNOTATION, "/.well-known/agent.json"),
+            "endpoint": annotations.get(
+                AGENT_ENDPOINT_ANNOTATION, "/.well-known/agent.json"
+            ),
             "sourceRef": {
                 "apiVersion": resource.get("apiVersion", ""),
                 "kind": resource.get("kind", ""),
                 "name": metadata.get("name", ""),
-                "namespace": metadata.get("namespace", "")
-            }
+                "namespace": metadata.get("namespace", ""),
+            },
         }
 
         # Parse skills if present
@@ -113,7 +116,9 @@ class AgentController:
 
         return agent_info
 
-    def get_agent_url(self, resource: Dict[str, Any], agent_info: Dict[str, Any]) -> Optional[str]:
+    def get_agent_url(
+        self, resource: Dict[str, Any], agent_info: Dict[str, Any]
+    ) -> Optional[str]:
         """Get the agent URL from a resource."""
         kind = resource.get("kind", "")
         metadata = resource.get("metadata", {})
@@ -137,7 +142,7 @@ class AgentController:
                     group="route.openshift.io",
                     version="v1",
                     namespace=namespace,
-                    plural="routes"
+                    plural="routes",
                 )
 
                 for route in routes.get("items", []):
@@ -154,7 +159,9 @@ class AgentController:
 
         return None
 
-    async def verify_agent_endpoint(self, url: str, endpoint: str) -> tuple[bool, Optional[Dict[str, Any]]]:
+    async def verify_agent_endpoint(
+        self, url: str, endpoint: str
+    ) -> tuple[bool, Optional[Dict[str, Any]]]:
         """Verify that an agent endpoint is accessible and fetch agent card."""
         if not url:
             return False, None
@@ -173,7 +180,12 @@ class AgentController:
             logger.debug(f"Agent endpoint {agent_url} not accessible: {e}")
             return False, None
 
-    def create_agent_cr(self, agent_info: Dict[str, Any], url: Optional[str] = None, agent_card: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def create_agent_cr(
+        self,
+        agent_info: Dict[str, Any],
+        url: Optional[str] = None,
+        agent_card: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         """Create an Agent custom resource from agent info."""
         namespace = agent_info["sourceRef"]["namespace"]
         agent_name = agent_info["name"]
@@ -189,19 +201,16 @@ class AgentController:
                 "namespace": namespace,
                 "labels": {
                     "app.kubernetes.io/managed-by": "agent-controller",
-                    f"{AGENT_LABEL_PREFIX}class": agent_info["class"]
-                }
+                    f"{AGENT_LABEL_PREFIX}class": agent_info["class"],
+                },
             },
             "spec": {
                 "class": agent_info["class"],
                 "name": agent_info["name"],
                 "endpoint": agent_info["endpoint"],
-                "sourceRef": agent_info["sourceRef"]
+                "sourceRef": agent_info["sourceRef"],
             },
-            "status": {
-                "phase": "Discovered",
-                "conditions": []
-            }
+            "status": {"phase": "Discovered", "conditions": []},
         }
 
         # Add URL to status if available
@@ -214,7 +223,13 @@ class AgentController:
 
         return agent_cr
 
-    async def update_agent_status(self, namespace: str, cr_name: str, url: Optional[str] = None, endpoint: str = "/.well-known/agent.json"):
+    async def update_agent_status(
+        self,
+        namespace: str,
+        cr_name: str,
+        url: Optional[str] = None,
+        endpoint: str = "/.well-known/agent.json",
+    ):
         """Update the status of an Agent CR."""
         try:
             # Get current CR
@@ -223,7 +238,7 @@ class AgentController:
                 version=AGENT_CRD_VERSION,
                 namespace=namespace,
                 plural=AGENT_CRD_PLURAL,
-                name=cr_name
+                name=cr_name,
             )
 
             # Update status
@@ -244,7 +259,7 @@ class AgentController:
                         "status": "True",
                         "reason": "EndpointAccessible",
                         "message": "Agent endpoint is accessible",
-                        "lastTransitionTime": now
+                        "lastTransitionTime": now,
                     }
                 else:
                     status["phase"] = "Failed"
@@ -253,7 +268,7 @@ class AgentController:
                         "status": "False",
                         "reason": "EndpointNotAccessible",
                         "message": "Agent endpoint is not accessible",
-                        "lastTransitionTime": now
+                        "lastTransitionTime": now,
                     }
             else:
                 status["phase"] = "Failed"
@@ -262,7 +277,7 @@ class AgentController:
                     "status": "False",
                     "reason": "NoURL",
                     "message": "No accessible URL found for agent",
-                    "lastTransitionTime": now
+                    "lastTransitionTime": now,
                 }
 
             # Update conditions
@@ -280,10 +295,12 @@ class AgentController:
                 namespace=namespace,
                 plural=AGENT_CRD_PLURAL,
                 name=cr_name,
-                body=agent
+                body=agent,
             )
 
-            logger.info(f"Updated Agent CR {namespace}/{cr_name} status: {status['phase']}")
+            logger.info(
+                f"Updated Agent CR {namespace}/{cr_name} status: {status['phase']}"
+            )
 
         except ApiException as e:
             logger.error(f"Failed to update Agent CR status: {e}")
@@ -319,20 +336,22 @@ class AgentController:
                         version=AGENT_CRD_VERSION,
                         namespace=namespace,
                         plural=AGENT_CRD_PLURAL,
-                        name=cr_name
+                        name=cr_name,
                     )
 
                     # Only update if this is a Route (priority resource) or if existing has no URL
                     existing_url = existing_agent.get("status", {}).get("url")
                     if kind == "Route" or not existing_url:
-                        logger.info(f"Updating existing Agent CR {namespace}/{cr_name} from {kind}")
+                        logger.info(
+                            f"Updating existing Agent CR {namespace}/{cr_name} from {kind}"
+                        )
 
                         # Update the sourceRef to point to this resource if it's better
-                        if kind == "Route" or not existing_agent.get("spec", {}).get("sourceRef", {}).get("kind"):
+                        if kind == "Route" or not existing_agent.get("spec", {}).get(
+                            "sourceRef", {}
+                        ).get("kind"):
                             patch_data = {
-                                "spec": {
-                                    "sourceRef": agent_info["sourceRef"]
-                                }
+                                "spec": {"sourceRef": agent_info["sourceRef"]}
                             }
                             self.custom_objects.patch_namespaced_custom_object(
                                 group=AGENT_CRD_GROUP,
@@ -340,10 +359,12 @@ class AgentController:
                                 namespace=namespace,
                                 plural=AGENT_CRD_PLURAL,
                                 name=cr_name,
-                                body=patch_data
+                                body=patch_data,
                             )
 
-                        await self.update_agent_status(namespace, cr_name, url, agent_info["endpoint"])
+                        await self.update_agent_status(
+                            namespace, cr_name, url, agent_info["endpoint"]
+                        )
 
                 except ApiException as e:
                     if e.status == 404:
@@ -355,13 +376,17 @@ class AgentController:
                             version=AGENT_CRD_VERSION,
                             namespace=namespace,
                             plural=AGENT_CRD_PLURAL,
-                            body=agent_cr
+                            body=agent_cr,
                         )
 
-                        logger.info(f"Created Agent CR {namespace}/{cr_name} from {kind}")
+                        logger.info(
+                            f"Created Agent CR {namespace}/{cr_name} from {kind}"
+                        )
 
                         # Update status
-                        await self.update_agent_status(namespace, cr_name, url, agent_info["endpoint"])
+                        await self.update_agent_status(
+                            namespace, cr_name, url, agent_info["endpoint"]
+                        )
 
                         # Track this agent
                         self.managed_agents[agent_key] = f"{kind}/{name}"
@@ -381,7 +406,7 @@ class AgentController:
                         version=AGENT_CRD_VERSION,
                         namespace=namespace,
                         plural=AGENT_CRD_PLURAL,
-                        name=cr_name
+                        name=cr_name,
                     )
                     logger.info(f"Deleted Agent CR {namespace}/{cr_name}")
                     del self.managed_agents[agent_key]
@@ -397,9 +422,7 @@ class AgentController:
         # Sync routes
         try:
             routes = self.custom_objects.list_cluster_custom_object(
-                group="route.openshift.io",
-                version="v1",
-                plural="routes"
+                group="route.openshift.io", version="v1", plural="routes"
             )
 
             for route in routes.get("items", []):
@@ -464,6 +487,7 @@ class AgentController:
                     return lambda: self.custom_objects.list_cluster_custom_object(
                         group=g, version=v, plural=p
                     )
+
                 list_func = make_list_func(group, version, plural)
 
             task = asyncio.create_task(self._watch_resource_type(name, list_func))
@@ -483,11 +507,11 @@ class AgentController:
 
                 # Watch for changes
                 for event in w.stream(list_func):
-                    event_type = event['type']
-                    resource = event['object']
+                    event_type = event["type"]
+                    resource = event["object"]
 
                     # Convert Kubernetes object to dict and add apiVersion/kind
-                    if hasattr(resource, 'to_dict'):
+                    if hasattr(resource, "to_dict"):
                         resource_dict = resource.to_dict()
                         # Add apiVersion and kind based on resource type
                         if resource_name == "services":
@@ -515,8 +539,11 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Agent Controller")
-    parser.add_argument("--sync-only", action="store_true",
-                       help="Run sync once and exit (default: run continuous watch)")
+    parser.add_argument(
+        "--sync-only",
+        action="store_true",
+        help="Run sync once and exit (default: run continuous watch)",
+    )
     args = parser.parse_args()
 
     if args.sync_only:

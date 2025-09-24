@@ -34,17 +34,16 @@ def check_oc_login() -> bool:
     """Check if user is logged into OpenShift."""
     try:
         result = subprocess.run(
-            ["oc", "whoami"],
-            capture_output=True,
-            text=True,
-            timeout=10
+            ["oc", "whoami"], capture_output=True, text=True, timeout=10
         )
         return result.returncode == 0
     except (subprocess.TimeoutExpired, FileNotFoundError):
         return False
 
 
-def get_namespace_scope(namespace: Optional[str] = None, all_namespaces: bool = False) -> tuple[str, str]:
+def get_namespace_scope(
+    namespace: Optional[str] = None, all_namespaces: bool = False
+) -> tuple[str, str]:
     """Determine namespace scope for OpenShift commands."""
     if all_namespaces:
         return "--all-namespaces", "all namespaces"
@@ -54,16 +53,15 @@ def get_namespace_scope(namespace: Optional[str] = None, all_namespaces: bool = 
         # Get current project
         try:
             result = subprocess.run(
-                ["oc", "project", "-q"],
-                capture_output=True,
-                text=True,
-                timeout=10
+                ["oc", "project", "-q"], capture_output=True, text=True, timeout=10
             )
             if result.returncode == 0 and result.stdout.strip():
                 current_project = result.stdout.strip()
                 return f"-n {current_project}", f"current project: {current_project}"
             else:
-                raise Exception("No current project set. Use namespace parameter or all_namespaces=true")
+                raise Exception(
+                    "No current project set. Use namespace parameter or all_namespaces=true"
+                )
         except subprocess.TimeoutExpired:
             raise Exception("Timeout checking current OpenShift project")
 
@@ -73,12 +71,7 @@ def discover_agents_native(namespace_flag: str) -> List[Dict[str, Any]]:
     try:
         # Run oc command to get Agent CRs
         cmd = f"oc get agents {namespace_flag} -o json"
-        result = subprocess.run(
-            cmd.split(),
-            capture_output=True,
-            text=True,
-            timeout=30
-        )
+        result = subprocess.run(cmd.split(), capture_output=True, text=True, timeout=30)
 
         if result.returncode != 0:
             raise Exception(f"OpenShift command failed: {result.stderr}")
@@ -93,7 +86,11 @@ def discover_agents_native(namespace_flag: str) -> List[Dict[str, Any]]:
 
 
 @mcp.tool()
-def discover_agents(namespace: Optional[str] = None, all_namespaces: bool = False, verify_endpoints: bool = False) -> str:
+def discover_agents(
+    namespace: Optional[str] = None,
+    all_namespaces: bool = False,
+    verify_endpoints: bool = False,
+) -> str:
     """Discover agents in OpenShift cluster or namespace using native oc get agents."""
 
     # Check OpenShift login
@@ -107,7 +104,7 @@ def discover_agents(namespace: Optional[str] = None, all_namespaces: bool = Fals
     agent_crs = discover_agents_native(namespace_flag)
 
     if not agent_crs:
-        return f"No agents found in {scope_msg}.\n\nTo make agents discoverable, ensure they have these labels:\n  ai.openshift.io/agent.class: \"a2a\"\n  ai.openshift.io/agent.name: \"your-agent-name\""
+        return f'No agents found in {scope_msg}.\n\nTo make agents discoverable, ensure they have these labels:\n  ai.openshift.io/agent.class: "a2a"\n  ai.openshift.io/agent.name: "your-agent-name"'
 
     # Process discovered Agent CRs
     agents = []
@@ -138,7 +135,7 @@ def discover_agents(namespace: Optional[str] = None, all_namespaces: bool = Fals
             "phase": phase,
             "url": url,
             "agent_card_url": agent_card_url,
-            "description": description
+            "description": description,
         }
 
         if verify_endpoints and agent_card_url:
@@ -171,7 +168,9 @@ def get_agent_card(agent_url: str, endpoint: str = "/.well-known/agent.json") ->
             response = client.get(agent_card_url)
 
             if response.status_code != 200:
-                raise Exception(f"Failed to retrieve agent card from {agent_card_url} (status: {response.status_code})")
+                raise Exception(
+                    f"Failed to retrieve agent card from {agent_card_url} (status: {response.status_code})"
+                )
 
             agent_card = response.json()
 
@@ -199,9 +198,11 @@ def list_agents(namespace: Optional[str] = None, all_namespaces: bool = False) -
             return agents_json
 
         # Parse the JSON from the discover result
-        lines = agents_json.split('\n')
-        json_start = next(i for i, line in enumerate(lines) if line.strip().startswith('['))
-        json_content = '\n'.join(lines[json_start:])
+        lines = agents_json.split("\n")
+        json_start = next(
+            i for i, line in enumerate(lines) if line.strip().startswith("[")
+        )
+        json_content = "\n".join(lines[json_start:])
         agents = json.loads(json_content)
 
         # Create summary table
@@ -221,7 +222,9 @@ def list_agents(namespace: Optional[str] = None, all_namespaces: bool = False) -
 
 
 @mcp.tool()
-async def send_message_to_agent(agent_url: str, message: str, auth_token: Optional[str] = None) -> str:
+async def send_message_to_agent(
+    agent_url: str, message: str, auth_token: Optional[str] = None
+) -> str:
     """Send a message to an A2A agent and get the response."""
 
     async with httpx.AsyncClient(verify=False, timeout=30) as httpx_client:
@@ -242,10 +245,10 @@ async def send_message_to_agent(agent_url: str, message: str, auth_token: Option
             # If auth token provided and extended card is supported, try to get it
             if auth_token and public_card.supports_authenticated_extended_card:
                 try:
-                    auth_headers_dict = {'Authorization': f'Bearer {auth_token}'}
+                    auth_headers_dict = {"Authorization": f"Bearer {auth_token}"}
                     extended_card = await resolver.get_agent_card(
                         relative_card_path=EXTENDED_AGENT_CARD_PATH,
-                        http_kwargs={'headers': auth_headers_dict},
+                        http_kwargs={"headers": auth_headers_dict},
                     )
                     final_agent_card_to_use = extended_card
                 except Exception:
@@ -257,23 +260,19 @@ async def send_message_to_agent(agent_url: str, message: str, auth_token: Option
 
         # Initialize client and send message
         client = A2AClient(
-            httpx_client=httpx_client,
-            agent_card=final_agent_card_to_use
+            httpx_client=httpx_client, agent_card=final_agent_card_to_use
         )
 
         send_message_payload = {
-            'message': {
-                'role': 'user',
-                'parts': [
-                    {'kind': 'text', 'text': message}
-                ],
-                'messageId': uuid4().hex,
+            "message": {
+                "role": "user",
+                "parts": [{"kind": "text", "text": message}],
+                "messageId": uuid4().hex,
             },
         }
 
         request = SendMessageRequest(
-            id=str(uuid4()),
-            params=MessageSendParams(**send_message_payload)
+            id=str(uuid4()), params=MessageSendParams(**send_message_payload)
         )
 
         try:
@@ -284,7 +283,9 @@ async def send_message_to_agent(agent_url: str, message: str, auth_token: Option
 
 
 @mcp.tool()
-async def send_streaming_message_to_agent(agent_url: str, message: str, auth_token: Optional[str] = None) -> str:
+async def send_streaming_message_to_agent(
+    agent_url: str, message: str, auth_token: Optional[str] = None
+) -> str:
     """Send a streaming message to an A2A agent and get the streaming response."""
 
     async with httpx.AsyncClient(verify=False, timeout=30) as httpx_client:
@@ -305,10 +306,10 @@ async def send_streaming_message_to_agent(agent_url: str, message: str, auth_tok
             # If auth token provided and extended card is supported, try to get it
             if auth_token and public_card.supports_authenticated_extended_card:
                 try:
-                    auth_headers_dict = {'Authorization': f'Bearer {auth_token}'}
+                    auth_headers_dict = {"Authorization": f"Bearer {auth_token}"}
                     extended_card = await resolver.get_agent_card(
                         relative_card_path=EXTENDED_AGENT_CARD_PATH,
-                        http_kwargs={'headers': auth_headers_dict},
+                        http_kwargs={"headers": auth_headers_dict},
                     )
                     final_agent_card_to_use = extended_card
                 except Exception:
@@ -320,23 +321,19 @@ async def send_streaming_message_to_agent(agent_url: str, message: str, auth_tok
 
         # Initialize client and send streaming message
         client = A2AClient(
-            httpx_client=httpx_client,
-            agent_card=final_agent_card_to_use
+            httpx_client=httpx_client, agent_card=final_agent_card_to_use
         )
 
         send_message_payload = {
-            'message': {
-                'role': 'user',
-                'parts': [
-                    {'kind': 'text', 'text': message}
-                ],
-                'messageId': uuid4().hex,
+            "message": {
+                "role": "user",
+                "parts": [{"kind": "text", "text": message}],
+                "messageId": uuid4().hex,
             },
         }
 
         streaming_request = SendStreamingMessageRequest(
-            id=str(uuid4()),
-            params=MessageSendParams(**send_message_payload)
+            id=str(uuid4()), params=MessageSendParams(**send_message_payload)
         )
 
         try:
@@ -344,9 +341,11 @@ async def send_streaming_message_to_agent(agent_url: str, message: str, auth_tok
 
             result_chunks = []
             async for chunk in stream_response:
-                result_chunks.append(chunk.model_dump(mode='json', exclude_none=True))
+                result_chunks.append(chunk.model_dump(mode="json", exclude_none=True))
 
-            return f"Streaming response from {agent_url}:\n\n" + "\n\n".join([json.dumps(chunk, indent=2) for chunk in result_chunks])
+            return f"Streaming response from {agent_url}:\n\n" + "\n\n".join(
+                [json.dumps(chunk, indent=2) for chunk in result_chunks]
+            )
 
         except Exception as e:
             raise Exception(f"Failed to send streaming message to agent: {e}")
