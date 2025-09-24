@@ -1,30 +1,28 @@
-# Dynamic Agent Discovery in OpenShift Clusters (draft)
+# OpenShift Dynamic Agent Patterns (Proof of Concept)
 
 ## Note
 
-A production agent discovery pattern needs at least basic security. we also have no stable best practices for deployment of agents. This is only a rough exploration of the possible implementation and use cases of combining Openshift and A2A.
+A production agent discovery pattern needs at least basic security. We also have no stable best practices for deployment of agents. This is only a rough exploration of the possible implementation and use cases of combining OpenShift and A2A protocols.
 
 ## About
 
-Dynamic agent discovery creates interesting new possibilities for cluster management.
+This project demonstrates how to build **durable, standards-aligned patterns** for agentic systems using OpenShift as the substrate. The goal is to leverage OpenShift's existing primitives to integrate all layers of the AI agent stack, including discovery, messaging, and orchestration.
 
-For example, deployments can include teams of agents that operate as utilities like e.g. a degtugging agent that synthesizes
-data from metrics and logs in order to surface problems with devices or deployments
-and offer succinct summaries and suggested next steps.
+### Vision: Agents as First-Class Resources
 
-Making such agents dynamically discoverable creates a powerful new capability for
-cluster managers, and empowers organizations to quickly surface new capabilities
-without the need for internal evangelizing.
+OpenShift provides the perfect substrate for **durable agent models** where agents become **self-documenting, conversational APIs** for clusters. This project implements:
 
-## Resource Shadowing / Digital Twin Pattern
+- **Agent CRD**: Define agents as first-class Kubernetes resources
+- **A2A Protocol Integration**: Wrap Agent-to-Agent communication practices into Kubernetes API objects
+- **MCP Server**: Discovers agents, surfaces capabilities, and enables communication via A2A
+- **Digital Twin Pattern**: Agents provide intelligent, self-describing interfaces to cluster resources
 
-In order to demonstrate the power of dynamic agent discovery in OpenShift we
-have implemented a "digital twin" pattern, simulating a configuration where components in a content delivery network
-are deployed alongside a lightweight agent capable of debugging them or providing
-health checks.
+## Architecture
 
-The agents may be discovered via an MCP server that facilitates discovery
-and then execution of agent capabilities via the A2A protocol.
+The system demonstrates the "Twin" pattern where each resource has an intelligent digital twin that can:
+- Participate in conversations and planning
+- Manage health, debug, and coordinate actions
+- Provide self-documenting capabilities through agent cards
 
 ## Example Run
 
@@ -133,6 +131,7 @@ oc-dynamic-agent-patterns on  main is 📦 v0.1.0 via 🐍 v3.13.7 on ☁️ 
 - OpenShift cluster access with `oc` CLI installed
 - Python 3.13 or later
 - uv package manager (recommended) or pip
+- Agent CRD installed in your cluster (see agent-operator directory)
 
 ## Setup
 
@@ -148,7 +147,16 @@ oc-dynamic-agent-patterns on  main is 📦 v0.1.0 via 🐍 v3.13.7 on ☁️ 
 
 ## Deployment
 
-### 1. Deploy Mock Agent
+### 1. Install Agent CRD
+
+First, install the Agent Custom Resource Definition in your OpenShift cluster:
+
+```bash
+cd agent-operator
+oc apply -f agent-crd.yaml
+```
+
+### 2. Deploy Mock Agent
 
 To deploy a mock agent to your OpenShift cluster:
 
@@ -177,16 +185,17 @@ The deployment script will:
 - Configure A2A discovery labels
 - Verify the deployment
 
-### 2. Run the MCP Server for Agent Discovery
+### 3. Run the MCP Server for Agent Discovery
 
-The MCP server provides tools for discovering and interacting with A2A agents:
+The MCP server provides tools for discovering and interacting with A2A agents using the Agent CRD:
 
 ```bash
-python oc_agent_discovery.py
+cd mcp
+python oc_agent_bridge.py
 ```
 
 This server provides the following capabilities:
-- Discover A2A agents in OpenShift clusters
+- Discover A2A agents in OpenShift clusters using native `oc get agents`
 - Retrieve agent cards from discovered agents
 - Send messages to agents via the A2A protocol
 - Stream responses from agents
@@ -196,32 +205,36 @@ This server provides the following capabilities:
 The MCP server can be integrated with Claude Code for interactive agent discovery and communication:
 
 ```bash
-claude mcp add oc-agent-discovery /Users/mofoster/Workspace/cloud-native-agents/demos/dynamic_discovery_with_agent_cards/.venv/bin/python /Users/mofoster/Workspace/cloud-native-agents/demos/dynamic_discovery_with_agent_cards/oc_agent_discovery.py
+claude mcp add oc-agent-discovery python /path/to/your/project/mcp/oc_agent_bridge.py
 ```
 
 This integration allows you to discover and interact with A2A agents directly from Claude Code using the MCP tools.
 
-### 3. Verify Deployment
+### 4. Verify Deployment
 
 Check that your agent is running and accessible:
 
 ```bash
-# Check pod status
-oc get pods -l app=device-status
+# Check agent CRs
+oc get agents
+
+# Check pod status (replace {agent-name} with your deployed agent)
+oc get pods -l app={agent-name}
 
 # View logs
-oc logs -l app=device-status -f
+oc logs -l app={agent-name} -f
 
 # Test agent card endpoint
-curl -k https://$(oc get route device-status -o jsonpath='{.spec.host}')/.well-known/agent.json
+curl -k https://$(oc get route {agent-name} -o jsonpath='{.spec.host}')/.well-known/agent.json
 ```
 
-## Discovery Labels
+## Agent Discovery
 
-Agents are automatically tagged with discovery labels:
-- `a2a.agent=true` - Marks the resource as an A2A agent
-- `a2a.agent.name=<agent-name>` - Agent identifier
-- `a2a.agent.version=0.1.0` - Agent version
+Agents are discovered using the Agent CRD with these labels:
+- `ai.openshift.io/agent.class: "a2a"` - Marks the resource as an A2A agent
+- `ai.openshift.io/agent.name: "<agent-name>"` - Agent identifier
+
+The MCP server uses `oc get agents` to discover agents and retrieves their capabilities through agent cards served at `/.well-known/agent.json`.
 
 ## Cleanup
 
@@ -229,16 +242,65 @@ To remove deployed agents:
 
 ```bash
 cd mock_agent
-./teardown.sh device-status
+./teardown.sh {agent-name}
 ```
 
 ## Usage Examples
 
 Once deployed, you can discover and interact with agents using the MCP tools:
 
-1. List all discovered agents
-2. Get agent cards for specific agents
-3. Send messages to agents
-4. Stream responses from agents
+1. **List all discovered agents**: Use `discover_agents` tool to find all Agent CRs
+2. **Get agent cards**: Retrieve agent capabilities and metadata
+3. **Send messages to agents**: Communicate via A2A protocol
+4. **Stream responses from agents**: Receive real-time responses
 
-The system demonstrates how A2A-compliant agents can be dynamically discovered and utilized within OpenShift environments.
+## Project Structure
+
+```
+.
+├── agent-operator/          # Agent CRD and controller
+│   ├── agent-crd.yaml      # Agent Custom Resource Definition
+│   └── controller.py       # Agent controller implementation
+├── mcp/                    # MCP server for agent discovery
+│   └── oc_agent_bridge.py  # fastmcp-based discovery server
+├── mock_agent/             # Mock agent implementation
+│   ├── agent.py           # A2A-compliant mock agent
+│   ├── deploy.sh          # Deployment script
+│   ├── configs/           # Agent configurations
+│   └── data/              # Mock data files
+└── docs/                  # Documentation and presentations
+```
+
+The system demonstrates how A2A-compliant agents can be dynamically discovered and utilized within OpenShift environments using native Kubernetes primitives.
+
+## Big Picture Architecture
+
+```text
++=========================================================================+
+|              Kubernetes / OpenShift Cluster (agentized)                 |
++=========================================================================+
+|                                                                         |
+|  +---------------- Agent Resource (CRD: Agent) ----------------------+  |
+|  | name: <agent-name>                                                 | |
+|  |                                                                    | |
+|  |  +------------+                             +-------------------+  | |
+|  |  | AGENT CARD |<==== A2A / ACP messages ===>| Other Agents/     |  | |
+|  |  |  (signed)  |  (routing, identity, prov.) | Services          |  | |
+|  |  +-----+------+                             +-------------------+  | |
+|  |        | exposes: /card  /invoke  /metrics  /health                | |
+|  |        v                                                           | |
+|  |  +----------------+      MCP tool negotiation      +------------+  | |
+|  |  |   MCP SERVER   | <----------------------------> |  TOOLS/APIs|  | |
+|  |  +--------+-------+                                +------------+  | |
+|  |           |  /metrics                                              | |
+|  |           v                                                        | |
+|  |     Observability -----> Prometheus / Grafana                      | |
+|  +---------------------------------------------------------------------+|
+|                                                                         |
+|   ^ Deployment Path       ^ Security/Provenance       ^ Discovery       |
+|   | (OCI image -> CRD +   | (RBAC, signed cards,      | (Registry /     |
+|   |  Controller reconcile)|  key trust)               |  Card Index)    |
+|   +-----------------------+---------------------------+-----------------+
+|      Controller syncs cards using labels or registry integration        |
++=========================================================================+
+```
