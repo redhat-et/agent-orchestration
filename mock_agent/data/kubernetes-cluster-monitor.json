@@ -1,0 +1,108 @@
+{
+  "cluster": "prod-east-k8s-01",
+  "namespace": "ecommerce-backend",
+  "timestamp": "2025-09-23T15:45:20Z",
+  "status": "CRITICAL",
+  "score": 0.68,
+  "summary": "Multiple pod restarts and resource pressure detected. Payment service experiencing OOMKilled events and ingress controller showing high error rates.",
+  "metrics": {
+    "total_nodes": 6,
+    "ready_nodes": 5,
+    "total_pods": 42,
+    "running_pods": 37,
+    "pending_pods": 3,
+    "failed_pods": 2,
+    "cluster_cpu_usage_pct": 72.0,
+    "cluster_memory_usage_pct": 84.0,
+    "pod_restart_count_5m": 8,
+    "pv_usage_pct": 67.0,
+    "last_metric_ts": "2025-09-23T15:45:15Z"
+  },
+  "log_snippets": [
+    {
+      "ts": "2025-09-23T15:42:10Z",
+      "level": "ERROR",
+      "source": "kubelet",
+      "text": "Pod payment-service-7d9f8b-xz4k2 exceeded memory limit: OOMKilled"
+    },
+    {
+      "ts": "2025-09-23T15:43:05Z",
+      "level": "WARN",
+      "source": "kube-scheduler",
+      "text": "Failed to schedule pod inventory-worker-abc123: insufficient memory on all nodes"
+    },
+    {
+      "ts": "2025-09-23T15:44:30Z",
+      "level": "ERROR",
+      "source": "ingress-nginx",
+      "text": "upstream connect error: no healthy upstream for /api/payments (502)"
+    },
+    {
+      "ts": "2025-09-23T15:44:55Z",
+      "level": "WARN",
+      "source": "node-controller",
+      "text": "Node k8s-worker-03 status changed to NotReady: kubelet stopped posting node status"
+    }
+  ],
+  "findings": [
+    {
+      "id": "K8S001",
+      "type": "resource_pressure",
+      "severity": "critical",
+      "description": "Payment service pods repeatedly killed due to memory limit violations, causing service disruption.",
+      "evidence": ["log_snippets[0]", "metrics.pod_restart_count_5m", "metrics.failed_pods"]
+    },
+    {
+      "id": "K8S002",
+      "type": "scheduling",
+      "severity": "high",
+      "description": "Pod scheduling failures due to insufficient cluster memory capacity.",
+      "evidence": ["log_snippets[1]", "metrics.pending_pods", "metrics.cluster_memory_usage_pct"]
+    },
+    {
+      "id": "K8S003",
+      "type": "node_health",
+      "severity": "high",
+      "description": "Worker node k8s-worker-03 became unresponsive, reducing cluster capacity.",
+      "evidence": ["log_snippets[3]", "metrics.ready_nodes"]
+    },
+    {
+      "id": "K8S004",
+      "type": "service_availability",
+      "severity": "medium",
+      "description": "Payment API experiencing 502 errors due to unhealthy upstream pods.",
+      "evidence": ["log_snippets[2]"]
+    }
+  ],
+  "recommended_actions": [
+    {
+      "action": "Increase payment-service memory limits from 512Mi to 1Gi and set appropriate requests",
+      "urgency": "immediate"
+    },
+    {
+      "action": "Investigate and restart kubelet on k8s-worker-03 or cordon node if hardware issue",
+      "urgency": "high"
+    },
+    {
+      "action": "Scale cluster by adding 2 more worker nodes to increase memory capacity",
+      "urgency": "high"
+    },
+    {
+      "action": "Implement Horizontal Pod Autoscaler for payment-service based on memory usage",
+      "urgency": "medium"
+    },
+    {
+      "action": "Review and optimize resource requests across all deployments to improve scheduling",
+      "urgency": "medium"
+    },
+    {
+      "action": "Set up PodDisruptionBudgets to prevent service outages during node maintenance",
+      "urgency": "low"
+    }
+  ],
+  "raw_payload_refs": {
+    "metrics_query_id": "k8s-mq-20250923-154515",
+    "logs_query_id": "k8s-lq-20250923-154515",
+    "events_query_id": "k8s-eq-20250923-154515"
+  }
+}

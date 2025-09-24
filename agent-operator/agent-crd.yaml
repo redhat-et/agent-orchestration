@@ -1,0 +1,99 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: agents.ai.openshift.io
+  labels:
+    app.kubernetes.io/name: agent-discovery
+    app.kubernetes.io/component: crd
+spec:
+  group: ai.openshift.io
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              class:
+                type: string
+                description: "The agent class (e.g., a2a, langchain, etc.)"
+              name:
+                type: string
+                description: "Human-readable name of the agent"
+              endpoint:
+                type: string
+                description: "Agent card endpoint path"
+                default: "/.well-known/agent.json"
+              sourceRef:
+                type: object
+                description: "Reference to the source Kubernetes resource"
+                properties:
+                  apiVersion:
+                    type: string
+                  kind:
+                    type: string
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                required:
+                - apiVersion
+                - kind
+                - name
+                - namespace
+            required:
+            - class
+            - name
+            - sourceRef
+          status:
+            type: object
+            properties:
+              phase:
+                type: string
+                enum:
+                - Discovered
+                - Ready
+                - Failed
+                - Unknown
+                default: Discovered
+              url:
+                type: string
+                description: "The full URL where the agent is accessible"
+              agentCard:
+                type: object
+                description: "Cached agent card data from endpoint"
+                x-kubernetes-preserve-unknown-fields: true
+              lastSeen:
+                type: string
+                format: date-time
+                description: "Last time the agent was verified to be accessible"
+    additionalPrinterColumns:
+    - name: Class
+      type: string
+      jsonPath: .spec.class
+    - name: Version
+      type: string
+      jsonPath: .status.agentCard.version
+    - name: Phase
+      type: string
+      jsonPath: .status.phase
+    - name: URL
+      type: string
+      jsonPath: .status.url
+    - name: Age
+      type: date
+      jsonPath: .metadata.creationTimestamp
+  scope: Namespaced
+  names:
+    plural: agents
+    singular: agent
+    kind: Agent
+    shortNames:
+    - ag
+    categories:
+    - ai
+    - automation

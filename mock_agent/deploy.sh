@@ -3,12 +3,13 @@ set -eu
 
 # Check if AGENT_NAME is provided
 if [ -z "${1:-}" ]; then
-    echo "Usage: $0 <AGENT_NAME>"
-    echo "Example: $0 device-status"
+    echo "Usage: $0 <AGENT_NAME> [CONFIG_FILE]"
+    echo "Example: $0 device-status ./configs/device-status.yaml"
     exit 1
 fi
 
 AGENT_NAME="$1"
+CONFIG_FILE="${2:-}"
 
 echo "Deploying $AGENT_NAME A2A Agent to OpenShift..."
 
@@ -35,7 +36,7 @@ oc start-build $AGENT_NAME --from-dir=. --follow
 
 # Apply the deployment configuration
 echo "Applying deployment configuration..."
-AGENT_NAME=$AGENT_NAME envsubst < deployment.yaml | oc apply -f -
+AGENT_NAME=$AGENT_NAME CONFIG_ARG="${CONFIG_FILE}" KB_FILE="${KB_FILE:-./data/default}" envsubst < deployment.yaml | oc apply -f -
 
 # Get the route hostname
 echo "Getting route information..."
@@ -94,9 +95,8 @@ echo "   Agent URL: https://$ROUTE_HOST"
 echo "   Agent Card: https://$ROUTE_HOST/.well-known/agent.json"
 echo ""
 echo "Discovery labels added:"
-echo "   a2a.agent=true"
-echo "   a2a.agent.name=$AGENT_NAME"
-echo "   a2a.agent.version=0.1.0"
+echo "   ai.openshift.io/agent.class=a2a"
+echo "   ai.openshift.io/agent.name=$AGENT_NAME"
 echo ""
 echo "Useful commands:"
 echo "   View logs: oc logs -l app=$AGENT_NAME -f"

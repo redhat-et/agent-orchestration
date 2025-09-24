@@ -1,0 +1,30 @@
+# Agent configuration for message-queue-monitor
+agent:
+  name: "Message Queue Monitor"
+  description: "Monitors message queue performance, throughput, and consumer lag to ensure reliable asynchronous communication."
+  version: "1.0.0"
+  capabilities: {}
+  default_input_modes:
+    - "text/plain"
+    - "application/json"
+  default_output_modes:
+    - "text/plain"
+    - "application/json"
+  skills:
+    - id: "queue-analysis"
+      name: "Queue Performance Analysis"
+      description: "Analyze message queue throughput and latency patterns"
+      input_modes: ["text/plain", "application/json"]
+      output_modes: ["text/plain", "application/json"]
+      tags: ["messaging", "queue", "performance"]
+    - id: "consumer-monitoring"
+      name: "Consumer Lag Monitoring"
+      description: "Monitor consumer lag and processing rates"
+      input_modes: ["text/plain", "application/json"]
+      output_modes: ["text/plain", "application/json"]
+      tags: ["messaging", "consumers", "lag"]
+
+# Knowledge base configuration
+knowledge_base:
+  file: "./data/message-queue-monitor.json"
+  type: "json"

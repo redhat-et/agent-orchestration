@@ -8,12 +8,13 @@ RUN pip install uv
 # Copy the agent files
 COPY agent.py .
 COPY data/ ./data/
+COPY configs/ ./configs/
 
 # Install dependencies
-RUN uv pip install --system "a2a-sdk[http-server]" uvicorn
+RUN uv pip install --system "a2a-sdk[http-server]" uvicorn PyYAML
 
 # Expose the port
 EXPOSE 10000
 
 # Run the agent
-CMD ["sh", "-c", "python agent.py --kb ./data/${AGENT_NAME}.txt --host 0.0.0.0 --port 10000"]
+CMD ["python", "agent.py", "--host", "0.0.0.0", "--port", "10000"]

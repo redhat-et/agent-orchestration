@@ -1,0 +1,30 @@
+# Agent configuration for cicd-pipeline-monitor
+agent:
+  name: "CI/CD Pipeline Monitor"
+  description: "Monitors continuous integration and deployment pipelines, tracks build success rates, and identifies bottlenecks in the development workflow."
+  version: "1.0.0"
+  capabilities: {}
+  default_input_modes:
+    - "text/plain"
+    - "application/json"
+  default_output_modes:
+    - "text/plain"
+    - "application/json"
+  skills:
+    - id: "pipeline-analysis"
+      name: "Pipeline Analysis"
+      description: "Analyze CI/CD pipeline performance and identify bottlenecks"
+      input_modes: ["text/plain", "application/json"]
+      output_modes: ["text/plain", "application/json"]
+      tags: ["cicd", "pipeline", "analysis"]
+    - id: "build-monitoring"
+      name: "Build Monitoring"
+      description: "Monitor build success rates and failure patterns"
+      input_modes: ["text/plain", "application/json"]
+      output_modes: ["text/plain", "application/json"]
+      tags: ["build", "monitoring", "deployment"]
+
+# Knowledge base configuration
+knowledge_base:
+  file: "./data/cicd-pipeline-monitor.json"
+  type: "json"

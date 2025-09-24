@@ -1,0 +1,30 @@
+# Agent configuration for security-monitoring-agent
+agent:
+  name: "Security Monitoring Agent"
+  description: "Monitors security events, threat patterns, and compliance violations to maintain a secure cloud-native environment."
+  version: "1.0.0"
+  capabilities: {}
+  default_input_modes:
+    - "text/plain"
+    - "application/json"
+  default_output_modes:
+    - "text/plain"
+    - "application/json"
+  skills:
+    - id: "threat-detection"
+      name: "Threat Detection"
+      description: "Detect and analyze security threats and anomalous behavior"
+      input_modes: ["text/plain", "application/json"]
+      output_modes: ["text/plain", "application/json"]
+      tags: ["security", "threats", "detection"]
+    - id: "compliance-monitoring"
+      name: "Compliance Monitoring"
+      description: "Monitor compliance with security policies and regulations"
+      input_modes: ["text/plain", "application/json"]
+      output_modes: ["text/plain", "application/json"]
+      tags: ["security", "compliance", "policies"]
+
+# Knowledge base configuration
+knowledge_base:
+  file: "./data/security-monitoring-agent.json"
+  type: "json"
