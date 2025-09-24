@@ -1,7 +1,4 @@
-# Patterns
-
-```markdown
-# 🌀 New Architectural Patterns
+# 🌀 Agentic Architectural Patterns
 
 ## The "Twin" Pattern
 - From IoT: each resource has a digital twin  
