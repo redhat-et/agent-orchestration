@@ -1,3 +1,7 @@
+
+
+
+
 # ☸️ Why OpenShift?
 
 - Already provides primitives necessary for integrating all layers of the agentic stack, including discovery. 

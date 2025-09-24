@@ -1,11 +1,11 @@
-# 🚀 Next Steps
+
+# ⏭️ Next Steps
 
 ## Still Needs
  - Standardized deployment spec.
  - Identity verification with Agent Card signatures.
  - RBAC
  - Baseline /metrics endpoint.
-
 ---
 
 # Big Picture 
