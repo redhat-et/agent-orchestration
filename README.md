@@ -10,6 +10,10 @@
 - Defining a **uniform runtime contract** (`/.well-known/agent.json`, `/healthz`, `/metrics`) that any compliant agent image must satisfy.
 - Bridging OpenShift agents into developer tooling through an **MCP server** that discovers agents and relays A2A protocol messages.
 
+## Todos
+
+Explore integration of concepts with [Kagenti](https://github.com/kagenti/kagenti) as there is significant overlap in goals. 
+
 ## Quick Start Pathways
 ### 1. OpenShift Cluster Experiment
 1. Install the Agent CRD and demo operator: `cd agent-operator && oc apply -f agent-crd.yaml` (plus the controller manifest once hardened).
