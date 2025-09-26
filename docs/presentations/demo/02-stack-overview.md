@@ -17,3 +17,10 @@
 
 **Cross-cutting services:**  
 Storage • Observability • Deployment • Security • Governance
+
+**Conclusion**
+ - Orchestration and Planning, where agent frameworks live, is the most contested part of the stack. 
+ - This creates an opportunity: by hooking in just above and just below the most unstable layer we can build a durable conceptual boundary.  
+ - In practice this would mean:
+    - building a simple interface for search and discovery – durable across implementation details 
+    - using agent card metadata (a common feature across messaging protocols) as a basis for modeling agents as components in systems.
