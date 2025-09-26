@@ -1,7 +1,7 @@
 [project]
-name = "status-update-agent-with-dynamic-discovery"
+name = "agent-orchestration"
 version = "0.1.0"
-description = "Add your description here"
+description = "An exploration of Agents as a first class resource in Kubernetes and OpenShift clusters."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
