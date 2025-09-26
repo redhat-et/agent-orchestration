@@ -19,7 +19,7 @@
 |  | name: <agent-name>                                                 | |
 |  |                                                                    | |
 |  |  +------------+                             +-------------------+  | |
-|  |  | AGENT CARD |<==== A2A / ACP messages ===>| Other Agents/     |  | |
+|  |  | AGENT CARD |<====    A2A messages    ===>| Other Agents/     |  | |
 |  |  |  (signed)  |  (routing, identity, prov.) | Services          |  | |
 |  |  +-----+------+                             +-------------------+  | |
 |  |        | exposes: /card  /invoke  /metrics  /health                | |
