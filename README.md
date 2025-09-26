@@ -4,7 +4,7 @@
 - **Proof of concept only.** The repo demonstrates a potential agent contract and operator flow; it is **not** production ready.
 - **Mock agents.** All agents in `mock_agent/` are synthetic services to illustrate the deployment and discovery contract we intend to enforce.
 - **Security/integration gaps.** Auth, RBAC, hardened reconcilers, and polished docs are still in flight.
-- The core features here overlap with [Kagenti](https://github.com/kagenti/kagenti), meaning this will likely ultimately evolve into an integration between Kagenti and OpenShift.
+- The core features here overlap with [Kagenti](https://github.com/kagenti/kagenti), meaning this will likely ultimately evolve into an integration between Kagenti and OpenShift. See: Issue redhat-et/agent-orchestration#12
 
 ## What This Repo Demonstrates
 - Turning agent workloads into **first-class Kubernetes resources** via an `Agent` CRD and controller.
