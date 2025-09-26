@@ -1,4 +1,4 @@
-bash```
+```
 oc-dynamic-agent-patterns on  main [!] is 📦 v0.1.0 via 🐍 v3.12.8 on ☁️  (us-west-2) on ☁️  mofoster
 ❯ oc get agents
 NAME                    CLASS   VERSION   PHASE   URL                                                                                        AGE
