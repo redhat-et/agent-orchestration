@@ -4,15 +4,12 @@
 - **Proof of concept only.** The repo demonstrates a potential agent contract and operator flow; it is **not** production ready.
 - **Mock agents.** All agents in `mock_agent/` are synthetic services to illustrate the deployment and discovery contract we intend to enforce.
 - **Security/integration gaps.** Auth, RBAC, hardened reconcilers, and polished docs are still in flight.
+- The core features here overlap with [Kagenti](https://github.com/kagenti/kagenti), meaning this will likely ultimately evolve into an integration between Kagenti and OpenShift.
 
 ## What This Repo Demonstrates
 - Turning agent workloads into **first-class Kubernetes resources** via an `Agent` CRD and controller.
 - Defining a **uniform runtime contract** (`/.well-known/agent.json`, `/healthz`, `/metrics`) that any compliant agent image must satisfy.
 - Bridging OpenShift agents into developer tooling through an **MCP server** that discovers agents and relays A2A protocol messages.
-
-## Todos
-
-Explore integration of concepts with [Kagenti](https://github.com/kagenti/kagenti) as there is significant overlap in goals. 
 
 ## Quick Start Pathways
 ### 1. OpenShift Cluster Experiment
