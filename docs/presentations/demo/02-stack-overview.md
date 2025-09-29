@@ -2,7 +2,9 @@
 
 
 
-# 📚 AI Agent Stack + Maturity
+# AI Agent Stack + Maturity
+
+The concept of an "AI Agent" can be modeled into the following conceptual layers, with accompanying projects for each.
 
 | Layer | Responsibility | Examples | Maturity |
 |-------|----------------|----------|----------|
