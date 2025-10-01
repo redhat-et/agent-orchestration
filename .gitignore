@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+.venv/
+.env
+
+# macOS
+.DS_Store
+
+# JWT/Security tokens
+tokens/*
+!tokens/README.md
+jwk_*.json
+jwks.json
+*.pem
+*.key
+*.crt
+
+# Kubernetes/OpenShift
+*.kubeconfig
+kubeconfig
+
+# IDE
+.vscode/
+.idea/
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Distribution
+dist/
+build/
+*.egg-info/

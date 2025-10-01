@@ -6,8 +6,13 @@ metadata:
     app: ${AGENT_NAME}
     ai.openshift.io/agent.class: "a2a"
     ai.openshift.io/agent.name: "${AGENT_NAME}"
+    a2a.agent: "true"
+    a2a.agent.name: "${AGENT_NAME}"
+    a2a.agent.version: "0.1.0"
   annotations:
     ai.openshift.io/agent.endpoint: "/.well-known/agent.json"
+    a2a.agent.description: "Answers questions from a KnowledgeBase consisting of team/contributor status updates."
+    a2a.agent.skills: "status-query"
 spec:
   replicas: 1
   selector:
@@ -19,14 +24,26 @@ spec:
         app: ${AGENT_NAME}
         ai.openshift.io/agent.class: "a2a"
         ai.openshift.io/agent.name: "${AGENT_NAME}"
+        a2a.agent: "true"
+        a2a.agent.name: "${AGENT_NAME}"
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: ${AGENT_NAME}
         image: ${AGENT_NAME}:latest
         ports:
-        - containerPort: 10000
+        - name: http
+          containerPort: 10000
         command: ["python3", "agent.py"]
         args: ["--config", "${CONFIG_ARG}"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+          readOnlyRootFilesystem: true
         env:
         - name: PORT
           value: "10000"
@@ -36,6 +53,58 @@ spec:
           value: "${AGENT_NAME}"
         - name: CONFIG_FILE
           value: "${CONFIG_FILE}"
+        - name: A2A_PUBLISH_JWKS
+          valueFrom:
+            configMapKeyRef:
+              name: ${AGENT_NAME}-config
+              key: A2A_PUBLISH_JWKS
+              optional: true
+        - name: A2A_SIGN_CARD
+          valueFrom:
+            configMapKeyRef:
+              name: ${AGENT_NAME}-config
+              key: A2A_SIGN_CARD
+              optional: true
+        - name: A2A_JWKS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ${AGENT_NAME}-config
+              key: A2A_JWKS_URL
+              optional: true
+        - name: A2A_SIGNING_JWK_PATH
+          value: "/var/run/secrets/a2a-signing/jwk_private.json"
+        volumeMounts:
+        - name: a2a-signing
+          mountPath: /var/run/secrets/a2a-signing
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
+        readinessProbe:
+          httpGet:
+            path: /.well-known/agent.json
+            port: 10000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /.well-known/agent.json
+            port: 10000
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+      volumes:
+      - name: a2a-signing
+        secret:
+          secretName: ${AGENT_NAME}-a2a-signing
+          optional: true
+      - name: tmp
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
@@ -45,11 +114,14 @@ metadata:
     app: ${AGENT_NAME}
     ai.openshift.io/agent.class: "a2a"
     ai.openshift.io/agent.name: "${AGENT_NAME}"
+    a2a.agent: "true"
+    a2a.agent.name: "${AGENT_NAME}"
 spec:
   selector:
     app: ${AGENT_NAME}
   ports:
-  - protocol: TCP
+  - name: http
+    protocol: TCP
     port: 80
     targetPort: 10000
   type: ClusterIP
@@ -62,14 +134,39 @@ metadata:
     app: ${AGENT_NAME}
     ai.openshift.io/agent.class: "a2a"
     ai.openshift.io/agent.name: "${AGENT_NAME}"
+    a2a.agent: "true"
+    a2a.agent.name: "${AGENT_NAME}"
   annotations:
     ai.openshift.io/agent.endpoint: "/.well-known/agent.json"
+    a2a.agent.endpoint: "/.well-known/agent.json"
 spec:
   to:
     kind: Service
     name: ${AGENT_NAME}-service
   port:
-    targetPort: 10000
+    targetPort: http
   tls:
     termination: edge
     insecureEdgeTerminationPolicy: Redirect
+---
+apiVersion: ai.openshift.io/v1
+kind: Agent
+metadata:
+  name: ${AGENT_NAME}
+  labels:
+    ai.openshift.io/agent.class: "a2a"
+    ai.openshift.io/agent.name: "${AGENT_NAME}"
+    a2a.agent: "true"
+    a2a.agent.name: "${AGENT_NAME}"
+    a2a.agent.version: "0.1.0"
+spec:
+  class: a2a
+  name: ${AGENT_NAME}
+  version: "0.1.0"
+  description: "Answers questions from a KnowledgeBase consisting of team/contributor status updates."
+  endpoint: "/.well-known/agent.json"
+  sourceRef:
+    apiVersion: route.openshift.io/v1
+    kind: Route
+    name: ${AGENT_NAME}
+    namespace: ${NAMESPACE}

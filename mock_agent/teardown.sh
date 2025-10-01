@@ -33,6 +33,10 @@ delete_resource() {
     fi
 }
 
+# Delete Agent CR if present
+echo "Removing Agent custom resource..."
+delete_resource agent $AGENT_NAME || true
+
 # Delete route
 echo "Removing route..."
 delete_resource route $AGENT_NAME
@@ -57,6 +61,14 @@ for i in {1..30}; do
     sleep 2
 done
 
+# Delete configmap created by deploy
+echo "Removing configmap..."
+delete_resource configmap ${AGENT_NAME}-config
+
+# Delete signing secret
+echo "Removing signing secret..."
+delete_resource secret ${AGENT_NAME}-a2a-signing
+
 # Delete build configuration
 echo "Removing build configuration..."
 delete_resource buildconfig $AGENT_NAME
@@ -65,9 +77,30 @@ delete_resource buildconfig $AGENT_NAME
 echo "Removing image stream..."
 delete_resource imagestream $AGENT_NAME
 
-# Delete agent entry 
-echo "Removing image stream..."
-delete_resource agent $AGENT_NAME
+# Optionally remove central JWKS entry (ConfigMap) key for this agent (safe merge)
+if [ "${REMOVE_CENTRAL_JWKS:-false}" = "true" ]; then
+  echo "Removing agent key from central JWKS ConfigMap (a2a-central-jwks)..."
+  if oc get configmap a2a-central-jwks &>/dev/null; then
+    EXISTING_JWKS=$(oc get configmap a2a-central-jwks -o jsonpath='{.data.jwks\.json}' 2>/dev/null || echo '{"keys":[]}')
+    UPDATED_JWKS=$(python3 - <<'PY'
+import sys, json, os
+existing = json.loads(os.environ.get('EXISTING_JWKS','{"keys":[]}'))
+kid_prefix = os.environ.get('AGENT_NAME','agent')
+existing['keys'] = [k for k in existing.get('keys', []) if k.get('kid','').split('-')[0] != kid_prefix]
+print(json.dumps(existing))
+PY
+)
+    if [ -n "$UPDATED_JWKS" ]; then
+      echo "$UPDATED_JWKS" | oc create configmap a2a-central-jwks --from-file=jwks.json=/dev/stdin --dry-run=client -o yaml | oc apply -f -
+      if oc get deployment jwks-server >/dev/null 2>&1; then
+        oc rollout restart deployment/jwks-server >/dev/null 2>&1 || true
+      fi
+      echo "   Central JWKS updated."
+    fi
+  else
+    echo "   Central JWKS ConfigMap not found; skipping."
+  fi
+fi
 
 # Clean up any remaining builds
 echo "Cleaning up builds..."
