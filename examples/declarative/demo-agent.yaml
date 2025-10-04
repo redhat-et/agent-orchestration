@@ -1,0 +1,16 @@
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: demo-kserve-agent
+  namespace: kagent
+spec:
+  type: Declarative
+  description: "Demo agent using KServe-served Qwen2.5-0.5B model"
+  declarative:
+    modelConfig: qwen-kserve
+    systemMessage: |
+      You are a helpful AI assistant running on OpenShift AI with KServe.
+      You are powered by the Qwen2.5-0.5B model.
+      Answer questions concisely and helpfully.
+    stream: false
+    tools: []

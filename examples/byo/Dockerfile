@@ -7,14 +7,13 @@ RUN pip install uv
 
 # Copy the agent files
 COPY agent.py .
-COPY data/ ./data/
 COPY configs/ ./configs/
 
 # Install dependencies
 RUN uv pip install --system "a2a-sdk[http-server]" uvicorn PyYAML
 
-# Expose the port
-EXPOSE 10000
+# Expose the port (kagent expects 8080)
+EXPOSE 8080
 
 # Run the agent
-CMD ["python", "agent.py", "--host", "0.0.0.0", "--port", "10000"]
+CMD ["python", "agent.py", "--host", "0.0.0.0", "--port", "8080"]

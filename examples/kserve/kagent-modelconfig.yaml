@@ -1,0 +1,15 @@
+apiVersion: kagent.dev/v1alpha2
+kind: ModelConfig
+metadata:
+  name: qwen-kserve
+  namespace: kagent
+spec:
+  # Use OpenAI provider since Ollama has OpenAI-compatible API
+  provider: OpenAI
+  model: qwen2.5:0.5b
+  # Point to KServe InferenceService
+  baseURL: http://qwen-tiny.models.svc.cluster.local:8080/v1
+  # No API key needed for local Ollama
+  openAI:
+    temperature: "0.7"
+    maxTokens: 512

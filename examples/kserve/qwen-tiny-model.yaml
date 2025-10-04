@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: models
+---
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: qwen-tiny
+  namespace: models
+  annotations:
+    serving.kserve.io/deploymentMode: RawDeployment
+spec:
+  predictor:
+    minReplicas: 1
+    maxReplicas: 1
+    containers:
+    - name: kserve-container
+      image: ollama/ollama:latest
+      command:
+      - /bin/sh
+      - -c
+      - |
+        export HOME=/tmp
+        export OLLAMA_MODELS=/tmp/models
+        ollama serve &
+        sleep 10
+        ollama pull qwen2.5:0.5b
+        wait
+      env:
+      - name: OLLAMA_HOST
+        value: "0.0.0.0:8080"
+      resources:
+        requests:
+          cpu: "500m"
+          memory: 1Gi
+        limits:
+          cpu: "1"
+          memory: 2Gi
+      ports:
+      - containerPort: 8080
+        protocol: TCP
+      volumeMounts:
+      - name: ollama-data
+        mountPath: /tmp
+    volumes:
+    - name: ollama-data
+      emptyDir: {}

@@ -1,0 +1,31 @@
+# Minimal kagent configuration for resource-constrained environments
+# Disables non-essential agents to reduce CPU/memory footprint
+
+providers:
+  openAI:
+    apiKey: "" # Will be set via --set flag
+
+# Disable non-essential agents
+agents:
+  argo-rollouts-agent:
+    enabled: false
+  cilium-debug-agent:
+    enabled: false
+  cilium-manager-agent:
+    enabled: false
+  cilium-policy-agent:
+    enabled: false
+  istio-agent:
+    enabled: false
+  kgateway-agent:
+    enabled: false
+  observability-agent:
+    enabled: false
+  promql-agent:
+    enabled: false
+
+# Keep essential components
+# - kagent-controller (required)
+# - kagent-ui (for demo)
+# - k8s-agent (useful)
+# - helm-agent (useful)

@@ -30,6 +30,12 @@ Provide a first-class runtime for packaging, deploying, discovering, and invokin
 - On `oc get agents`, the controller resolves live endpoints, hydrates status with the agent card, and returns up-to-date metadata without persisting state.
 - Future work: hardened reconciliation loop, packaging for OLM, RBAC tightening.
 
+### kagent Integration (`kagent/`, `mock_agent/kagent-agents/`)
+- Full kagent framework for building, deploying, and managing Kubernetes-native AI agents.
+- Support for multiple agent frameworks (LangGraph, CrewAI, ADK) with declarative Agent resources.
+- Example monitoring agents demonstrating real-world use cases (application performance, cluster health, security).
+- Provides controller, CLI, UI, and Python/Go SDKs for comprehensive agent lifecycle management.
+
 ### Mock Agents (`mock_agent/`)
 - Lightweight FastAPI services that implement the runtime contract and ship representative payloads from `mock_agent/data/`.
 - Deployment scripts (`deploy.sh`, `teardown.sh`) exercise the contract end-to-end against OpenShift routes.

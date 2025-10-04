@@ -1,0 +1,15 @@
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: message-queue-monitor
+  namespace: oc-dynamic-agents
+spec:
+  description: "Monitors message queue performance, throughput, and consumer lag to ensure reliable asynchronous communication."
+  type: BYO
+  byo:
+    deployment:
+      image: image-registry.openshift-image-registry.svc:5000/oc-dynamic-agents/mock-agents:latest
+      imagePullPolicy: Always
+      env:
+        - name: CONFIG_FILE
+          value: "/app/configs/message-queue-monitor.yaml"

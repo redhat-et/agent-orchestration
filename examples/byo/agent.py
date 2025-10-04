@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
-This is a mock agent, meant to return static responses to queries.
+BYO (Bring Your Own) Mock Agent
 
-Its purpose is to help debug multi-agent architectures by acting as
-a constant in the system.
+A mock agent that returns canned responses based on configuration.
+Useful for testing agentic systems without requiring live data sources.
 """
 from __future__ import annotations
 import argparse
+import json
 import os
-import re
 import yaml
 from pathlib import Path
-from typing import Iterable, List, Tuple, Dict, Any, Optional
+from typing import Dict, Any
 
-# Import A2A SDK components from their specific modules
+# Import A2A SDK components
 from a2a.types import AgentCard, AgentSkill, AgentCapabilities
 from a2a.server.apps import A2AFastAPIApplication
 from a2a.server.request_handlers.default_request_handler import DefaultRequestHandler
@@ -24,36 +24,21 @@ from a2a.server.tasks import InMemoryTaskStore
 from a2a.utils import new_agent_text_message
 
 
-class StatusKB:
-    def __init__(self, text: str):
-        # Store lines with simple normalization
-        self.text: str = text
-
-    @classmethod
-    def from_file(cls, path: Path) -> "StatusKB":
-        return cls(path.read_text(encoding="utf-8"))
-
-
 class MockAgent:
-    def __init__(self, kb: StatusKB):
-        self.kb = kb
+    def __init__(self, response_data: str):
+        # Store the mock response as a formatted string (JSON or text)
+        self.response_data: str = response_data
 
     async def answer(self, question: str) -> str:
-        return f"{self.kb.text}"
+        return self.response_data
 
 
 class MockAgentExecutor(AgentExecutor):
-    """Bridges A2A protocol <-> MockAgent business logic.
-
-    The SDK passes a RequestContext and an EventQueue. We extract the user's
-    text question from the context, query the KB, then enqueue a single
-    agent Message as a response.
-    """
+    """Bridges A2A protocol <-> MockAgent business logic."""
 
     def __init__(self, agent: MockAgent):
         self.agent = agent
 
-    # The SDK calls this for message/send and message/stream
     async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
         user_text = context.get_user_input()
         result = await self.agent.answer(user_text)
@@ -65,7 +50,7 @@ class MockAgentExecutor(AgentExecutor):
         )
 
 
-def load_agent_config(config_path: Optional[Path] = None) -> Dict[str, Any]:
+def load_agent_config(config_path: Path | None = None) -> Dict[str, Any]:
     """Load agent configuration from YAML file."""
     if config_path and config_path.exists():
         with open(config_path, "r", encoding="utf-8") as f:
@@ -91,7 +76,7 @@ def load_agent_config(config_path: Optional[Path] = None) -> Dict[str, Any]:
                 }
             ],
         },
-        "knowledge_base": {"file": "./data/default", "type": "text"},
+        "mock_response": "Default mock response: The agent is operational.",
     }
 
 
@@ -118,7 +103,7 @@ def build_agent_card(base_url: str, config: Dict[str, Any]) -> AgentCard:
         description=agent_config["description"],
         version=agent_config["version"],
         url=base_url,
-        capabilities=AgentCapabilities(),  # use default empty capabilities
+        capabilities=AgentCapabilities(),
         default_input_modes=agent_config["default_input_modes"],
         default_output_modes=agent_config["default_output_modes"],
         skills=skills,
@@ -146,32 +131,27 @@ def main():
         type=Path,
         help="Path to agent config YAML file (overrides CONFIG_FILE env var)",
     )
-    ap.add_argument(
-        "--kb",
-        type=Path,
-        help="Path to status text file (overrides KB_FILE env var and config)",
-    )
     ap.add_argument("--host", default=os.getenv("HOST", "0.0.0.0"))
-    ap.add_argument("--port", type=int, default=int(os.getenv("PORT", "10000")))
+    ap.add_argument("--port", type=int, default=int(os.getenv("PORT", "8080")))
     ap.add_argument(
         "--base-url", help="Override base URL (auto-detected if not provided)"
     )
     args = ap.parse_args()
 
-    # Load agent configuration
-    config_path = args.config
+    # Load agent configuration from --config arg or CONFIG_FILE env var
+    config_path = args.config or (Path(os.getenv("CONFIG_FILE")) if os.getenv("CONFIG_FILE") else None)
     config = load_agent_config(config_path)
 
-    # Determine KB file path - command line > env var > config file > default
-    if args.kb:
-        kb_path = args.kb
-    elif os.getenv("KB_FILE"):
-        kb_path = Path(os.getenv("KB_FILE"))
+    # Get mock response from config
+    # If it's a dict/list (JSON data), format it as JSON string
+    # If it's already a string, use it as-is
+    mock_response = config.get("mock_response", "No response data configured.")
+    if isinstance(mock_response, (dict, list)):
+        response_data = json.dumps(mock_response, indent=2)
     else:
-        kb_path = Path(config["knowledge_base"]["file"])
+        response_data = str(mock_response)
 
-    kb = StatusKB.from_file(kb_path)
-    agent = MockAgent(kb)
+    agent = MockAgent(response_data)
     executor = MockAgentExecutor(agent)
 
     # Determine base URL
@@ -183,12 +163,19 @@ def main():
     card = build_agent_card(base_url, config)
     app = A2AFastAPIApplication(agent_card=card, http_handler=http_handler)
 
+    # Add health endpoint for kagent readiness probe
+    fastapi_app = app.build()
+
+    @fastapi_app.get("/health")
+    async def health():
+        return {"status": "healthy"}
+
     print(f"Serving A2A Mock Agent on {args.host}:{args.port}")
     print("Agent card at /.well-known/agent.json")
+    print("Health check at /health")
 
     import uvicorn
 
-    fastapi_app = app.build()
     uvicorn.run(fastapi_app, host=args.host, port=args.port)
 
 
